@@ -1,0 +1,32 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Board : MonoBehaviour
+{
+  [SerializeField]
+  private GameObject _normalCube;
+  // Start is called before the first frame update
+  void Start()
+  {
+    DrawBoard();
+  }
+
+  void DrawBoard()
+  {
+
+    for (float i = 1; i <= 16; i++)
+    {
+      float nextLine = 1.83f * i;
+
+
+      for (float j = 1; j <= 16; j++)
+      {
+        Vector3 position = new Vector3((1.83f * j), 0, nextLine);
+        Instantiate(_normalCube, position, Quaternion.identity);
+      }
+
+    }
+
+  }
+}
