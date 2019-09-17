@@ -17,12 +17,12 @@ public class Board : MonoBehaviour
 
     for (float i = 1; i <= 16; i++)
     {
-      float nextLine = 1.83f * i;
+      float nextLine = 4.0f * i;
 
 
       for (float j = 1; j <= 16; j++)
       {
-        Vector3 position = new Vector3((1.83f * j), 0, nextLine);
+        Vector3 position = new Vector3((4.0f * j), 0, nextLine);
         Instantiate(_normalCube, position, Quaternion.identity);
       }
 
