@@ -6,6 +6,9 @@ public class Board : MonoBehaviour
 {
   [SerializeField]
   private GameObject _normalCube;
+
+
+
   // Start is called before the first frame update
   void Start()
   {
@@ -24,6 +27,7 @@ public class Board : MonoBehaviour
       {
         Vector3 position = new Vector3((4.0f * j), 0, nextLine);
         Instantiate(_normalCube, position, Quaternion.identity);
+
       }
 
     }
