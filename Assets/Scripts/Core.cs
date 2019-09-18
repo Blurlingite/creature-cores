@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
+// This script should not be communicating with any other "Core" script so that we can keep common behaviors of Cores (like knowing when to move) here and not have to copy & paste that code into each "Core" script
 public class Core : MonoBehaviour
 {
 
