@@ -14,6 +14,7 @@ public class CenterCube : MonoBehaviour
   void Update()
   {
 
+
   }
 
 
@@ -25,11 +26,7 @@ public class CenterCube : MonoBehaviour
       // change top of cube to green
       Debug.Log("player");
     }
-    else
-    {
-      Debug.Log("m");
 
-    }
 
 
   }
