@@ -6,6 +6,7 @@ public class TestCore : MonoBehaviour
 {
 
   private Board _board;
+  private Ray ray;
   [SerializeField]
   // num of spaces to move * each space's size
   private float _moveDistance = 3.0f;
@@ -21,6 +22,7 @@ public class TestCore : MonoBehaviour
     if (_board != null)
     {
       _spaceSize = _board.getSpaceSize();
+
     }
   }
 
@@ -28,54 +30,61 @@ public class TestCore : MonoBehaviour
   void Update()
   {
 
+    if (_spaceSize <= 0.0f)
+    {
+      Debug.LogError("Cannot get space size, Ray will not be casted");
+    }
+
     if (transform.position.y >= 3)
     {
       _isSelected = true;
+    }
+    else
+    {
+      _isSelected = false;
     }
 
     if (_isSelected == true)
     {
 
-      // Debug.Log("b");
 
-      // RaycastHit hitInfo;
-      // // cast a ray using this core's move distance
-      // if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.forward * _moveDistance) * 4, out hitInfo))
-      // {
-      //   Debug.Log("yes");
-      //   Debug.Log(hitInfo.transform.position.z);
-
-      //   Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.forward * _moveDistance) * 4, Color.red);
-
-      // }
-      // else
-      // {
-      //   Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.forward * _moveDistance) * 4, Color.red);
-
-      // }
-
-      Debug.Log("b");
-
-      RaycastHit[] hits;
-
-      hits = Physics.RaycastAll(transform.position, transform.TransformDirection(Vector3.forward), _moveDistance * _spaceSize);
-
-
-
-
-
-      for (int i = 0; i < hits.Length; i++)
-      {
-        RaycastHit currentHit = hits[i];
-
-        Debug.Log(currentHit.transform.position.z);
-
-      }
+      CalculateMovementPattern();
 
     }
 
   }
 
+
+  void CalculateMovementPattern()
+  {
+    Debug.Log("b");
+
+    float rayDistance = _moveDistance * _spaceSize;
+
+    Vector3 rayDirection = transform.TransformDirection(Vector3.forward);
+
+    ray = new Ray(transform.position, rayDirection);
+
+    RaycastHit[] hits;
+
+    // hits = Physics.RaycastAll(ray.origin, ray.direction, _moveDistance * _spaceSize);
+
+    // RayCastAll() will let you get info from each collider the ray passes through (each one the ray hits)
+    hits = Physics.RaycastAll(ray.origin, ray.direction, rayDistance);
+
+    // Draw the ray so you can see where it's hitting in Unity
+    Debug.DrawRay(transform.position, rayDirection * rayDistance, Color.red);
+
+    for (int i = 0; i < hits.Length; i++)
+    {
+      // get the info from the current hit
+      RaycastHit currentHit = hits[i];
+
+      Debug.Log("X is : " + currentHit.transform.position.x + " Z is: " + currentHit.transform.position.z);
+
+
+    }
+  }
 
 
 

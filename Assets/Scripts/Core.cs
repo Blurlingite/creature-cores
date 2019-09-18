@@ -6,6 +6,7 @@ public class Core : MonoBehaviour
 {
 
   private bool _stopFalling = false;
+  private float _coreRiseHeight = 3.0f;
   // Start is called before the first frame update
   void Start()
   {
@@ -35,7 +36,17 @@ public class Core : MonoBehaviour
     {
 
       Debug.Log("up");
-      transform.position = new Vector3(transform.position.x, 3, transform.position.z);
+      transform.position = new Vector3(transform.position.x, _coreRiseHeight, transform.position.z);
+
+    }
+
+    // If the B key is pressed, put the core back down where it was
+    if (other.CompareTag("Player") && Input.GetKeyDown(KeyCode.B))
+    {
+
+      Debug.Log("BBBBBB");
+
+      transform.position = new Vector3(transform.position.x, (_coreRiseHeight - 1.96f), transform.position.z);
 
     }
 
