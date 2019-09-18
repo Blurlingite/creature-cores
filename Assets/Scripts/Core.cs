@@ -31,11 +31,12 @@ public class Core : MonoBehaviour
   {
 
     // If player, move this core upwards , then cast 4 rays equal to how far this core can move (ex. 3 spaces forward, backward, left, right)
-    if (other.CompareTag("Player"))
+    if (other.CompareTag("Player") && (Input.GetKeyDown(KeyCode.Space)))
     {
 
       Debug.Log("up");
       transform.position = new Vector3(transform.position.x, 3, transform.position.z);
+
     }
 
   }
