@@ -5,33 +5,25 @@ using UnityEngine;
 public class CenterCube : MonoBehaviour
 {
 
-  private GameObject _outerCubeParent;
-  [SerializeField]
-  private Material _selectedMaterial;
-
-  [SerializeField]
-  private Material _deSelectedMaterial;
-
   private bool _isStillColliding = false;
+
+  private Color _spaceSelectedColor = Color.green;
+  private Color _spaceDeSelectedColor = Color.white;
+
+  public float Speed = 1, Offset;
+
+  private Renderer _renderer;
+  private MaterialPropertyBlock _propBlock;
 
   // Start is called before the first frame update
   void Start()
   {
-
-    _outerCubeParent = this.transform.parent.gameObject;
-    if (_outerCubeParent == null)
-    {
-      Debug.LogError("Parent block is NULL");
-
-    }
-
 
   }
 
   // Update is called once per frame
   void Update()
   {
-
 
   }
 
@@ -41,20 +33,25 @@ public class CenterCube : MonoBehaviour
 
     if (other.CompareTag("Player"))
     {
+
       _isStillColliding = true;
+
+      _propBlock = new MaterialPropertyBlock();
+
+      _renderer = transform.parent.GetComponent<Renderer>();
+
       // change top of cube to green
 
-      Renderer colorOfCube = _outerCubeParent.GetComponent<Renderer>();
+      // Get the current value of the material properties in the renderer (which should be the Material we gave a custom shader to that we assigned (to the parent in this case) in Unity)
+      // Note: When we made the custom shader, we had to open it here and edit the "_Color" key to have "[PerRendererData]" in front of it (see GreenShader_shade in the Materials folder) Then we created a Material and assigned it this shader in the "Shader" field (I had to search for it by name). Then we took that Material and assigned it to the cube we want to change color (The parent of the object that this script is attached to, Ex. Normal_Cube)
+      _renderer.GetPropertyBlock(_propBlock);
 
-      if (colorOfCube != null)
-      {
-        colorOfCube.material = _selectedMaterial;
-
-      }
-
+      // Assign our new value.
+      _propBlock.SetColor("_Color", _spaceSelectedColor);
+      // Apply the edited values to the renderer.
+      _renderer.SetPropertyBlock(_propBlock);
 
     }
-
 
   }
 
@@ -64,13 +61,15 @@ public class CenterCube : MonoBehaviour
     // if the other object was the Player
     if (other.CompareTag("Player"))
     {
-      Renderer colorOfCube = _outerCubeParent.GetComponent<Renderer>();
 
-      if (colorOfCube != null)
-      {
-        colorOfCube.material = _deSelectedMaterial;
+      // Get the current value of the material properties in the renderer (which should be the Material we gave a custom shader to that we assigned (to the parent in this case) in Unity)
+      // Note: When we made the custom shader, we had to open it here and edit the "_Color" key to have "[PerRendererData]" in front of it (see GreenShader_shade in the Materials folder) Then we created a Material and assigned it this shader in the "Shader" field (I had to search for it by name). Then we took that Material and assigned it to the cube we want to change color (The parent of the object that this script is attached to, Ex. Normal_Cube)
+      _renderer.GetPropertyBlock(_propBlock);
+      // Assign our new value (the de-select color).
+      _propBlock.SetColor("_Color", _spaceDeSelectedColor);
+      // Apply the edited values to the renderer.
+      _renderer.SetPropertyBlock(_propBlock);
 
-      }
     }
   }
 }
