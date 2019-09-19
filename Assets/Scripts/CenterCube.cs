@@ -43,7 +43,6 @@ public class CenterCube : MonoBehaviour
     {
       _isStillColliding = true;
       // change top of cube to green
-      Debug.Log("player");
 
       Renderer colorOfCube = _outerCubeParent.GetComponent<Renderer>();
 

@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6821319421369265042}
   - component: {fileID: 5829500714664045072}
+  - component: {fileID: 1840512353}
   m_Layer: 0
   m_Name: Game_Data
   m_TagString: Untagged
@@ -46,3 +47,15 @@ MonoBehaviour:
   _movePatternColor: {fileID: 2100000, guid: ec70e7b5578324cd9b6e8cbe06af9ac7, type: 2}
   _hideMovePatternColor: {fileID: 2100000, guid: 65faed45bb83142e2b7c24f2bc751f16,
     type: 2}
+--- !u!114 &1840512353
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8081209620853285721}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa6ab55e32d3841a5a4efa9c6d353ca8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

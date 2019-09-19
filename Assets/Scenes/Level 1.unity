@@ -270,6 +270,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Board
       objectReference: {fileID: 0}
+    - target: {fileID: 4950047646448016254, guid: f97d96e3a85474d82817cbc037675140,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4950047646448016253, guid: f97d96e3a85474d82817cbc037675140,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -514,6 +519,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
+    - target: {fileID: 4729784456847677236, guid: a8da0534fcca944faafef7a1d576d51b,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4729784456847677230, guid: a8da0534fcca944faafef7a1d576d51b,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -583,6 +593,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Game_Data
       objectReference: {fileID: 0}
+    - target: {fileID: 8081209620853285721, guid: deeb1e63d7a7444ab8b5982cd055db23,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6821319421369265042, guid: deeb1e63d7a7444ab8b5982cd055db23,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -640,23 +655,3 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: deeb1e63d7a7444ab8b5982cd055db23, type: 3}
---- !u!1 &2015480178 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 4729784456847677236, guid: a8da0534fcca944faafef7a1d576d51b,
-    type: 3}
-  m_PrefabInstance: {fileID: 1099061144}
-  m_PrefabAsset: {fileID: 0}
---- !u!136 &2015480179
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2015480178}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  m_Radius: 0.5
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}

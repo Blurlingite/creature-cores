@@ -7,7 +7,9 @@ public class TestCore : MonoBehaviour
 
   private Board _board;
   private GameData _gameData;
+  private MovementPatterns _movementPatterns;
   private Ray ray;
+  private RaycastHit[] _allHits;
   [SerializeField]
   // num of spaces to move * each space's size
   private float _moveDistance = 3.0f;
@@ -33,6 +35,14 @@ public class TestCore : MonoBehaviour
       Debug.LogError("Game Data object is NULL");
 
     }
+
+    _movementPatterns = GameObject.Find("Game_Data").GetComponent<MovementPatterns>();
+
+    if (_movementPatterns == null)
+    {
+      Debug.LogError("Movement Patterns script is NULL and should be on Game Data object");
+
+    }
   }
 
   // Update is called once per frame
@@ -55,65 +65,32 @@ public class TestCore : MonoBehaviour
     }
 
 
-    CalculateMovementPattern();
-
-
-  }
-
-
-  void CalculateMovementPattern()
-  {
-    Debug.Log("b");
-
-    float rayDistance = _moveDistance * _spaceSize;
-
-    Vector3 rayDirection = transform.TransformDirection(Vector3.forward);
-
-    ray = new Ray(transform.position, rayDirection);
-
-    RaycastHit[] hits;
-
-    // RayCastAll() will let you get info from each collider the ray passes through (each one the ray hits)
-    hits = Physics.RaycastAll(ray.origin, ray.direction, rayDistance);
-
     if (_isSelected == true)
     {
-      // Draw the ray (only when it is selected) so you can see where it's hitting in Unity
-      Debug.DrawRay(transform.position, rayDirection * rayDistance, Color.red);
+      CoreIndivMovementPattern();
 
     }
-
-    for (int i = 0; i < hits.Length; i++)
+    else if (_isSelected == false && _allHits != null)
     {
-      // get the info from the current hit
-      RaycastHit currentHit = hits[i];
 
+      // use Game Data's method to turn each space back to normal color
 
-      ToggleMovementPattern(currentHit);
-
-      Debug.Log("X is : " + currentHit.transform.position.x + " Z is: " + currentHit.transform.position.z);
-
+      _movementPatterns.HideMovementPattern(_allHits);
+      // don't need to set RayCast array to null since it gets reassigned whenever the core is selected
 
     }
+
+
   }
 
-  void ToggleMovementPattern(RaycastHit hit)
+  void CoreIndivMovementPattern()
   {
-    // get the parent cube, then get the Renderer so you can change it's color to show that the cube is in the movement path
-    Transform parentCube = hit.transform.parent;
+    Vector3 thisCoresPosition = transform.position;
 
-    Renderer colorOfCube = parentCube.GetComponent<Renderer>();
-
-    if (_isSelected == true)
-    {
-      colorOfCube.material = _gameData.getMovePatternColor();
-    }
-    else
-    {
-      colorOfCube.material = _gameData.getHideMovePatternColor();
-    }
-
+    _allHits = _movementPatterns.CalculateMovementPattern(thisCoresPosition, _moveDistance, _spaceSize);
   }
+
+
 
 
 
