@@ -8,9 +8,13 @@ public class Creature : MonoBehaviour
   private Board _board;
   private GameData _gameData; // get move and attack patterns
   private MovementPatterns _movementPatterns;
+  // The player of this creature
+  private string _whoseTurnIsIt = "Player_1";
   private bool _stopFalling = false;
   private bool _isSelected, _isPlacedBackDown = false;
   private float _creatureRiseHeight = 3.0f;
+  // The Y position the creature needs to be to be on the ground
+  private float _creatureGroundY = 1.04f;
   // size of each space on the board (x or y value)
   private float _spaceSize;
 
@@ -78,8 +82,10 @@ public class Creature : MonoBehaviour
   {
 
     // If player, move this core upwards , then cast 4 rays equal to how far this core can move (ex. 3 spaces forward, backward, left, right)
-    if (other.CompareTag("Player") && (Input.GetKeyDown(KeyCode.Space)))
+    if (other.CompareTag("Player_1") && (Input.GetKeyDown(KeyCode.Space)))
     {
+
+
 
       // Debug.Log("up");
       transform.position = new Vector3(transform.position.x, _creatureRiseHeight, transform.position.z);
@@ -87,12 +93,12 @@ public class Creature : MonoBehaviour
     }
 
     // If the B key is pressed, put the core back down where it was
-    if (other.CompareTag("Player") && Input.GetKeyDown(KeyCode.B))
+    if (other.CompareTag("Player_1") && Input.GetKeyDown(KeyCode.B))
     {
 
       // Debug.Log("BBBBBB");
 
-      transform.position = new Vector3(transform.position.x, (_creatureRiseHeight - 1.96f), transform.position.z);
+      transform.position = new Vector3(transform.position.x, _creatureGroundY, transform.position.z);
 
     }
 
@@ -135,6 +141,14 @@ public class Creature : MonoBehaviour
     {
       CoreIndivMovementPattern();
 
+      // When I implement a turn system, we will search for the the current player by searching for the tag so we know who can press keys. We dont want Player 2 to press keys during Player 1's turn. We will use the tag to set _whoseTurnIsIt. Then we will exclude all other players except the one with the tag equal to _whoseTurnIsIt
+      // When it is player 1's turn, at anytime the creature is in the air and regardless of the player's position, if they press the B key, the creature will be placed down
+      if (_whoseTurnIsIt.Equals("Player_1") && Input.GetKeyDown(KeyCode.B))
+      {
+        transform.position = new Vector3(transform.position.x, _creatureGroundY, transform.position.z);
+
+      }
+
       // make this false so we know the core is not down right now
       _isPlacedBackDown = false;
 
@@ -158,9 +172,31 @@ public class Creature : MonoBehaviour
 
     _allMovementHits = _movementPatterns.CalculateMovementPattern(thisCoresPosition, _moveDistance, _spaceSize);
 
+    // we get to this method when the core is in the air, so now we need to check if we pressed the Space key and if we did, compare the player's position with the positions in the movement pattern. If you get a match, move the creature there
     if (Input.GetKeyDown(KeyCode.Space))
     {
-      // Vector3 playerPosition = ZZZZZZZZS
+      Player p1 = GameObject.Find("Player_1").GetComponent<Player>();
+      float playerPositionX = p1.transform.position.x;
+      float playerPositionZ = p1.transform.position.z;
+
+      for (int i = 0; i < _allMovementHits.Length; i++)
+      {
+        RaycastHit currentHit = _allMovementHits[i];
+
+        float currentHitX = Mathf.Round(currentHit.point.x);
+        // we Round the only the Z float and then add 1 to fix the ray's calculating error. This only affects the Z and NOT the X
+        float currentHitZ = Mathf.Round(currentHit.point.z) + 1.0f;
+
+        if (playerPositionX == currentHitX && playerPositionZ == currentHitZ)
+        {
+          Vector3 newLocation = new Vector3(currentHitX, _creatureGroundY, currentHitZ);
+          transform.position = newLocation;
+          break;  // to avoid casting another movement pattern
+        }
+      }
+
+
+
     }
 
 

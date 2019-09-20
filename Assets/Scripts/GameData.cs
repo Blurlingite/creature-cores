@@ -48,7 +48,6 @@ public class GameData : MonoBehaviour
       p1Creatures.TryGetValue(i, out creature);
 
       string json = JsonUtility.ToJson(creature);
-
       File.WriteAllText(Application.dataPath + "/SaveFiles/Player1Save.txt", json);
 
     }

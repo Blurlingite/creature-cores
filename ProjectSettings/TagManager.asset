@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Board
   - Creature
+  - Player_1
   layers:
   - Default
   - TransparentFX
