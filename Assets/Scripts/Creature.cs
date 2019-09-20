@@ -3,17 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // This script should not be communicating with any other "Core" script so that we can keep common behaviors of Cores (like knowing when to move) here and not have to copy & paste that code into each "Core" script
-public class Core : MonoBehaviour
+public class Creature : MonoBehaviour
 {
   private Board _board;
   private GameData _gameData; // get move and attack patterns
   private MovementPatterns _movementPatterns;
   private bool _stopFalling = false;
   private bool _isSelected, _isPlacedBackDown = false;
-  private float _coreRiseHeight = 3.0f;
+  private float _creatureRiseHeight = 3.0f;
   // size of each space on the board (x or y value)
   private float _spaceSize;
-  private float _moveDistance;
+  // number of spaces this creature can move
+  private float _moveDistance = 3.0f;
   // everywhere this core can move
   private RaycastHit[] _allMovementHits;
 
@@ -75,7 +76,7 @@ public class Core : MonoBehaviour
     {
 
       // Debug.Log("up");
-      transform.position = new Vector3(transform.position.x, _coreRiseHeight, transform.position.z);
+      transform.position = new Vector3(transform.position.x, _creatureRiseHeight, transform.position.z);
 
     }
 
@@ -85,7 +86,7 @@ public class Core : MonoBehaviour
 
       // Debug.Log("BBBBBB");
 
-      transform.position = new Vector3(transform.position.x, (_coreRiseHeight - 1.96f), transform.position.z);
+      transform.position = new Vector3(transform.position.x, (_creatureRiseHeight - 1.96f), transform.position.z);
 
     }
 
