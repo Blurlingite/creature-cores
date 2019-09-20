@@ -13,10 +13,14 @@ public class Creature : MonoBehaviour
   private float _creatureRiseHeight = 3.0f;
   // size of each space on the board (x or y value)
   private float _spaceSize;
-  // number of spaces this creature can move
-  private float _moveDistance = 3.0f;
+
   // everywhere this core can move
   private RaycastHit[] _allMovementHits;
+
+  // All variables that will be saved to the file go here:
+
+  // number of spaces this creature can move
+  private float _moveDistance = 3.0f;
 
   // Start is called before the first frame update
   void Start()
@@ -49,6 +53,9 @@ public class Creature : MonoBehaviour
 
     }
 
+    SaveLocally();
+
+
   }
 
   // Update is called once per frame
@@ -63,7 +70,6 @@ public class Creature : MonoBehaviour
 
     // where the core is currently and movement pattern if it can move
     CorePositioning();
-
 
 
   }
@@ -164,6 +170,32 @@ public class Creature : MonoBehaviour
   public void setMoveDistance(float NumOfSpacesToMove)
   {
     _moveDistance = NumOfSpacesToMove;
+  }
+
+  public float getMoveDistance()
+  {
+    return _moveDistance;
+  }
+
+
+  void SaveLocally()
+  {
+    CreatureToSerialize cts = new CreatureToSerialize(_moveDistance);
+    _gameData.AddToCreatureDictionary(cts);
+
+  }
+
+
+
+} // End of Creature class
+
+public class CreatureToSerialize
+{
+  public float moveDistance;
+
+  public CreatureToSerialize(float moveDistance)
+  {
+    this.moveDistance = moveDistance;
   }
 
 
