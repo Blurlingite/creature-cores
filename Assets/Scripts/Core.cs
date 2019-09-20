@@ -17,10 +17,13 @@ public class Core : MonoBehaviour
   // everywhere this core can move
   private RaycastHit[] _allMovementHits;
 
-
   // Start is called before the first frame update
   void Start()
   {
+
+
+
+
     _board = GameObject.Find("Board").GetComponent<Board>();
 
     // get the size of each space from the Board component
@@ -51,50 +54,15 @@ public class Core : MonoBehaviour
   void Update()
   {
 
-    if (_stopFalling == false)
-    {
-      transform.Translate(Vector3.down * Time.deltaTime);
-
-    }
-
-
 
     if (_spaceSize <= 0.0f)
     {
       Debug.LogError("Cannot get space size, Ray will not be casted");
     }
 
-    // We know if the core is selected if it is not on the ground (if the y value is above a certain number)
-    if (transform.position.y >= 3)
-    {
-      _isSelected = true;
+    // where the core is currently and movement pattern if it can move
+    CorePositioning();
 
-    }
-    else
-    {
-      _isSelected = false;
-    }
-
-
-
-    if (_isSelected == true)
-    {
-      CoreIndivMovementPattern();
-
-      // make this false so we know the core is not down right now
-      _isPlacedBackDown = false;
-
-    }
-    else if (_isSelected == false && _isPlacedBackDown == false && _allMovementHits != null)
-    {
-
-      // use Game Data's method to turn each space back to normal color
-      _movementPatterns.HideMovementPattern(_allMovementHits);
-
-      // don't need to set RayCast array to null since it gets reassigned whenever the core is selected, instead use _isPlacedBackDown to know that the core was placed back down
-      _isPlacedBackDown = true;
-
-    }
 
 
   }
@@ -134,11 +102,61 @@ public class Core : MonoBehaviour
 
   }
 
+  // Defines the core's position currently and where it can move if possible
+  void CorePositioning()
+  {
+    if (_stopFalling == false)
+    {
+      transform.Translate(Vector3.down * Time.deltaTime);
+
+    }
+
+    // We know if the core is selected if it is not on the ground (if the y value is above a certain number)
+    if (transform.position.y >= 3)
+    {
+      _isSelected = true;
+
+    }
+    else
+    {
+      _isSelected = false;
+    }
+
+
+
+    if (_isSelected == true)
+    {
+      CoreIndivMovementPattern();
+
+      // make this false so we know the core is not down right now
+      _isPlacedBackDown = false;
+
+    }
+    else if (_isSelected == false && _isPlacedBackDown == false && _allMovementHits != null)
+    {
+
+      // use Game Data's method to turn each space back to normal color
+      _movementPatterns.HideMovementPattern(_allMovementHits);
+
+      // don't need to set RayCast array to null since it gets reassigned whenever the core is selected, instead use _isPlacedBackDown to know that the core was placed back down
+      _isPlacedBackDown = true;
+
+    }
+  }
+
+  // calculates which spaces the core can move and highlights them
   void CoreIndivMovementPattern()
   {
     Vector3 thisCoresPosition = transform.position;
 
     _allMovementHits = _movementPatterns.CalculateMovementPattern(thisCoresPosition, _moveDistance, _spaceSize);
+
+    if (Input.GetKeyDown(KeyCode.Space))
+    {
+      // Vector3 playerPosition = ZZZZZZZZS
+    }
+
+
   }
 
 
