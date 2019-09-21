@@ -19,7 +19,24 @@ public class Creature : MonoBehaviour
   private float _spaceSize;
 
   // everywhere this core can move
-  private RaycastHit[] _allMovementHits;
+  private RaycastHit[] _forwardMovementHits;
+  private float _forwardXOffset = 0.0f;
+  private float _forwardZOffset = 1.0f;
+
+  private RaycastHit[] _backwardMovementHits;
+  private float _backwardZOffset = -1.0f;
+  private float _backwardXOffset = 0.0f;
+
+
+  private RaycastHit[] _leftMovementHits;
+  private float _leftXOffset = -0.5f;
+  private float _leftZOffset = 0.0f;
+
+  private RaycastHit[] _rightMovementHits;
+  private float _rightXOffset = 0.5f;
+  private float _rightZOffset = 0.0f;
+
+
 
   // All variables that will be saved to the file go here:
 
@@ -153,11 +170,16 @@ public class Creature : MonoBehaviour
       _isPlacedBackDown = false;
 
     }
-    else if (_isSelected == false && _isPlacedBackDown == false && _allMovementHits != null)
+    else if (_isSelected == false && _isPlacedBackDown == false && _forwardMovementHits != null && _backwardMovementHits != null && _leftMovementHits != null && _rightMovementHits != null)
     {
-
       // use Game Data's method to turn each space back to normal color
-      _movementPatterns.HideMovementPattern(_allMovementHits);
+      _movementPatterns.HideMovementPattern(_forwardMovementHits);
+      _movementPatterns.HideMovementPattern(_backwardMovementHits);
+
+      _movementPatterns.HideMovementPattern(_leftMovementHits);
+
+      _movementPatterns.HideMovementPattern(_rightMovementHits);
+
 
       // don't need to set RayCast array to null since it gets reassigned whenever the core is selected, instead use _isPlacedBackDown to know that the core was placed back down
       _isPlacedBackDown = true;
@@ -170,34 +192,23 @@ public class Creature : MonoBehaviour
   {
     Vector3 thisCoresPosition = transform.position;
 
-    _allMovementHits = _movementPatterns.CalculateMovementPattern(thisCoresPosition, _moveDistance, _spaceSize);
+    _forwardMovementHits = _movementPatterns.CalculateForwardMovementPattern(thisCoresPosition, _moveDistance, _spaceSize);
 
-    // we get to this method when the core is in the air, so now we need to check if we pressed the Space key and if we did, compare the player's position with the positions in the movement pattern. If you get a match, move the creature there
-    if (Input.GetKeyDown(KeyCode.Space))
-    {
-      Player p1 = GameObject.Find("Player_1").GetComponent<Player>();
-      float playerPositionX = p1.transform.position.x;
-      float playerPositionZ = p1.transform.position.z;
+    MovementPattern(_forwardMovementHits, _forwardXOffset, _forwardZOffset);
 
-      for (int i = 0; i < _allMovementHits.Length; i++)
-      {
-        RaycastHit currentHit = _allMovementHits[i];
+    _backwardMovementHits = _movementPatterns.CalculateBackwardMovementPattern(thisCoresPosition, _moveDistance, _spaceSize);
 
-        float currentHitX = Mathf.Round(currentHit.point.x);
-        // we Round the only the Z float and then add 1 to fix the ray's calculating error. This only affects the Z and NOT the X
-        float currentHitZ = Mathf.Round(currentHit.point.z) + 1.0f;
-
-        if (playerPositionX == currentHitX && playerPositionZ == currentHitZ)
-        {
-          Vector3 newLocation = new Vector3(currentHitX, _creatureGroundY, currentHitZ);
-          transform.position = newLocation;
-          break;  // to avoid casting another movement pattern
-        }
-      }
+    MovementPattern(_backwardMovementHits, _backwardXOffset, _backwardZOffset);
 
 
+    _leftMovementHits = _movementPatterns.CalculateLeftMovementPattern(thisCoresPosition, _moveDistance, _spaceSize);
 
-    }
+    MovementPattern(_leftMovementHits, _leftXOffset, _leftZOffset);
+
+
+    _rightMovementHits = _movementPatterns.CalculateRightMovementPattern(thisCoresPosition, _moveDistance, _spaceSize);
+
+    MovementPattern(_rightMovementHits, _rightXOffset, _rightZOffset);
 
 
   }
@@ -220,6 +231,46 @@ public class Creature : MonoBehaviour
     _gameData.AddToCreatureDictionary(cts);
 
   }
+
+
+
+  void MovementPattern(RaycastHit[] hitPoints, float xOffset, float zOffset)
+  {
+    // we get to this method when the core is in the air, so now we need to check if we pressed the Space key and if we did, compare the player's position with the positions in the movement pattern. If you get a match, move the creature there
+    if (Input.GetKeyDown(KeyCode.Space))
+    {
+      Player p1 = GameObject.Find("Player_1").GetComponent<Player>();
+      float playerPositionX = p1.transform.position.x;
+      float playerPositionZ = p1.transform.position.z;
+
+      for (int i = 0; i < hitPoints.Length; i++)
+      {
+        RaycastHit currentHit = hitPoints[i];
+
+
+        float currentHitX = currentHit.point.x + xOffset;
+
+        Debug.Log("LLLLLL: " + currentHitX);
+
+        // we Round the only the Z float and then add 1 to fix the ray's calculating error. This only affects the Z and NOT the X
+        float currentHitZ = Mathf.Round(currentHit.point.z) + zOffset;
+
+
+        if (playerPositionX == currentHitX && playerPositionZ == currentHitZ)
+        {
+          Vector3 newLocation = new Vector3(currentHitX, _creatureGroundY, currentHitZ);
+          transform.position = newLocation;
+          break;  // to avoid casting another movement pattern
+        }
+      }
+
+
+
+    }
+
+  }
+
+
 
 
 
