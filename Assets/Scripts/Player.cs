@@ -18,6 +18,7 @@ public class Player : MonoBehaviour
   // Update is called once per frame
   void Update()
   {
+
     CalculateMovement();
 
   }
@@ -28,7 +29,6 @@ public class Player : MonoBehaviour
     RaycastHit hitInfo;
 
     // upward movement
-
     if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.forward), out hitInfo, Mathf.Infinity) == true && Input.GetKeyDown(KeyCode.UpArrow) == true)
     {
       transform.position = hitInfo.transform.position;
@@ -53,4 +53,8 @@ public class Player : MonoBehaviour
     }
 
   }
-}
+
+
+
+
+} // End of Player class

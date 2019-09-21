@@ -10,7 +10,6 @@ public class GameData : MonoBehaviour
   IDictionary<short, CreatureToSerialize> p1Creatures = new Dictionary<short, CreatureToSerialize>();
 
 
-
   // Start is called before the first frame update
   void Start()
   {
@@ -39,7 +38,6 @@ public class GameData : MonoBehaviour
 
     for (short i = 0; i < p1Creatures.Count; i++)
     {
-
       // need this to store the result
       CreatureToSerialize creature;
 
@@ -49,7 +47,6 @@ public class GameData : MonoBehaviour
 
       string json = JsonUtility.ToJson(creature);
       File.WriteAllText(Application.dataPath + "/SaveFiles/Player1Save.txt", json);
-
     }
 
   }
@@ -57,11 +54,15 @@ public class GameData : MonoBehaviour
 
   public void AddToCreatureDictionary(CreatureToSerialize creature)
   {
+
     // get size of dict and assign that as the ID. If 0, ID is 0. Now there will be 1 creature in there so when we add the next creature, there will be 1 in the dictionary so the ID will be 1, etc.
     short dictionaryID = (Int16)p1Creatures.Count;
     p1Creatures.Add(dictionaryID, creature);
 
   }
 
-}
+
+
+
+} // end of GameData class
 
