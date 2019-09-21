@@ -11,7 +11,7 @@ public class Creature : MonoBehaviour
   // The player of this creature
   private string _whoseTurnIsIt = "Player_1";
   private bool _stopFalling = false;
-  private bool _isSelected, _isPlacedBackDown = false;
+  private bool _isSelected, _isDown = true;
   private float _creatureRiseHeight = 3.0f;
   // The Y position the creature needs to be to be on the ground
   private float _creatureGroundY = 1.04f;
@@ -99,6 +99,9 @@ public class Creature : MonoBehaviour
     if (other.CompareTag("Player_1") && Input.GetKeyDown(KeyCode.B))
     {
       transform.position = new Vector3(transform.position.x, _creatureGroundY, transform.position.z);
+
+      _isSelected = false;
+      _isDown = true;
     }
 
   }
@@ -116,6 +119,7 @@ public class Creature : MonoBehaviour
   // Defines the creature's position currently and where it can move if possible
   void CreaturePositioning()
   {
+
     if (_stopFalling == false)
     {
       transform.Translate(Vector3.down * Time.deltaTime);
@@ -135,6 +139,8 @@ public class Creature : MonoBehaviour
 
     if (_isSelected == true)
     {
+      // make this false so we know the creature is not down right now (We turned this true in the CreatureIndivMovementPattern() right after this, so if _isDown is changed to false after that method call, the HideMovementPattern() won't be called b/c _isDown must be true to enter it's if statement)
+      _isDown = false;
       CreatureIndivMovementPattern();
 
       // When I implement a turn system, we will search for the the current player by searching for the tag so we know who can press keys. We dont want Player 2 to press keys during Player 1's turn. We will use the tag to set _whoseTurnIsIt. Then we will exclude all other players except the one with the tag equal to _whoseTurnIsIt
@@ -142,14 +148,17 @@ public class Creature : MonoBehaviour
       if (_whoseTurnIsIt.Equals("Player_1") && Input.GetKeyDown(KeyCode.B))
       {
         transform.position = new Vector3(transform.position.x, _creatureGroundY, transform.position.z);
+
+        _isSelected = false;
+        _isDown = true;
       }
 
-      // make this false so we know the creature is not down right now
-      _isPlacedBackDown = false;
+
 
     }
-    else if (_isSelected == false && _isPlacedBackDown == false && _forwardMovementHits != null && _backwardMovementHits != null && _leftMovementHits != null && _rightMovementHits != null)
+    else if (_isSelected == false && _isDown == true && _forwardMovementHits != null && _backwardMovementHits != null && _leftMovementHits != null && _rightMovementHits != null)
     {
+
       // use Game Data's method to turn each space back to normal color
       _movementPatterns.HideMovementPattern(_forwardMovementHits);
       _movementPatterns.HideMovementPattern(_backwardMovementHits);
@@ -158,9 +167,13 @@ public class Creature : MonoBehaviour
 
       _movementPatterns.HideMovementPattern(_rightMovementHits);
 
-      // don't need to set RayCast array to null since it gets reassigned whenever the creature is selected, instead use _isPlacedBackDown to know that the creature was placed back down
-      _isPlacedBackDown = true;
 
+
+    }
+
+    else if (_isSelected == false && _isDown == true && _forwardMovementHits == null && _backwardMovementHits == null && _leftMovementHits == null && _rightMovementHits == null)
+    {
+      // Do nothing since this is called when the game just starts and all the RaycastHit arrays are null
     }
   }
 
@@ -215,6 +228,12 @@ public class Creature : MonoBehaviour
         {
           Vector3 newLocation = new Vector3(currentHitX, _creatureGroundY, currentHitZ);
           transform.position = newLocation;
+
+          _isSelected = false;
+          _isDown = true;
+
+
+
           break;  // to avoid casting another movement pattern
         }
       }
