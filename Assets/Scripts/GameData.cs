@@ -9,6 +9,10 @@ public class GameData : MonoBehaviour
 
   IDictionary<short, CreatureToSerialize> p1Creatures = new Dictionary<short, CreatureToSerialize>();
 
+  List<AttackSeeker> attackSeekers = new List<AttackSeeker>();
+
+
+
   // private Creature _currentlySelectedCreature;
 
   // Start is called before the first frame update
@@ -73,5 +77,16 @@ public class GameData : MonoBehaviour
   // }
 
 
+
+  public void addAtkSeeker(AttackSeeker atkSeeker)
+  {
+    attackSeekers.Add(atkSeeker);
+  }
+
+
+  public List<AttackSeeker> getAttackSeekers()
+  {
+    return attackSeekers;
+  }
 } // end of GameData class
 

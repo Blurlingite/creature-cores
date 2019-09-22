@@ -122,7 +122,10 @@ public class Creature : MonoBehaviour
 
     if (_isSelected == true && _isDown == false)
     {
-      CreatureIndivAttackPattern();
+
+      SummonAttackSeekers(_forwardMovementHits, _backwardMovementHits, _leftMovementHits, _rightMovementHits, _forwardXOffset, _forwardZOffset, _backwardXOffset, _backwardZOffset, _leftXOffset, _leftZOffset, _rightXOffset, _rightZOffset);
+
+      List<AttackSeeker> allAtkSeekers = _gameData.getAttackSeekers();
 
     }
 
@@ -197,9 +200,6 @@ public class Creature : MonoBehaviour
         _isSelected = false;
         _isDown = true;
       }
-
-
-
     }
     else if (_isSelected == false && _isDown == true && _forwardMovementHits != null && _backwardMovementHits != null && _leftMovementHits != null && _rightMovementHits != null)
     {
@@ -211,8 +211,6 @@ public class Creature : MonoBehaviour
       _movementPatterns.HideMovementPattern(_leftMovementHits);
 
       _movementPatterns.HideMovementPattern(_rightMovementHits);
-
-
 
     }
 
@@ -230,16 +228,6 @@ public class Creature : MonoBehaviour
     AllMovementPatterns(thisCreaturesPosition);
   }
 
-  // calculates which spaces the creature can attack and highlights them
-  void CreatureIndivAttackPattern()
-  {
-
-    // Player player1 = GameObject.Find("Player_1").GetComponent<Player>();
-
-    Vector3 player1Position = _player.transform.position;
-
-    AllAttackPatterns(player1Position);
-  }
 
 
   public void setMoveDistance(float NumOfSpacesToMove)
@@ -262,10 +250,8 @@ public class Creature : MonoBehaviour
 
 
 
-  void MovementPattern(RaycastHit[] hitPoints, float xOffset, float zOffset)
+  void MovementPattern(RaycastHit[] movementHitPoints, float xOffset, float zOffset)
   {
-
-    // Player p1 = GameObject.Find("Player_1").GetComponent<Player>();
 
     float playerPositionX = _player.transform.position.x;
     float playerPositionZ = _player.transform.position.z;
@@ -273,12 +259,9 @@ public class Creature : MonoBehaviour
     if (Input.GetKeyDown(KeyCode.Space))
     {
 
-
-
-
-      for (int i = 0; i < hitPoints.Length; i++)
+      for (int i = 0; i < movementHitPoints.Length; i++)
       {
-        RaycastHit currentHit = hitPoints[i];
+        RaycastHit currentHit = movementHitPoints[i];
 
 
         float currentHitX = currentHit.point.x + xOffset;
@@ -294,32 +277,16 @@ public class Creature : MonoBehaviour
           _isSelected = false;
           _isDown = true;
 
-
-
           break;  // to avoid casting another movement pattern
         }
       }
     }
-    else
-    {
 
-      if (hitPoints != null)
-      {
-        //zzzzz
-
-        SummonAttackSeekers(_forwardMovementHits, _backwardMovementHits, _leftMovementHits, _rightMovementHits, _forwardXOffset, _forwardZOffset, _backwardXOffset, _backwardZOffset, _leftXOffset, _leftZOffset, _rightXOffset, _rightZOffset);
-
-      }
-
-
-    }
   }
 
 
   void AttackPattern(RaycastHit[] hitPoints, float xOffset, float zOffset)
   {
-
-
 
     // we get to this method when the creature is in the air, so now we need to check if we pressed the Space key and if we did, compare the player's position with the positions in the movement pattern. If you get a match, move the creature there
     if (Input.GetKeyDown(KeyCode.Space))
@@ -347,17 +314,11 @@ public class Creature : MonoBehaviour
           _isSelected = false;
           _isDown = true;
 
-
-
           break;  // to avoid casting another attack pattern
         }
       }
     }
   }
-
-
-
-
 
 
   // Calculates the creature's entire movement pattern by passing in it's position
@@ -385,16 +346,6 @@ public class Creature : MonoBehaviour
 
   }
 
-  // Calculates the creature's entire movement pattern by passing in it's position
-  void AllAttackPatterns(Vector3 playerPosition)
-  {
-    // forward ray results
-    _forwardAttackHits = _attackPatterns.ForwardAttackPattern(playerPosition, _attackDistance, _spaceSize);
-
-    AttackPattern(_forwardAttackHits, _forwardXAtkOffset, _forwardZAtkOffset);
-
-  }
-
 
   void SummonAttackSeekers(RaycastHit[] forwardRayHits, RaycastHit[] backwardRayHits, RaycastHit[] leftRayHits, RaycastHit[] rightRayHits, float forwardXOffset, float forwardZOffset, float backwardXOffset, float backwardZOffset, float leftXOffset, float leftZOffset, float rightXOffset, float rightZOffset)
   {
@@ -414,7 +365,12 @@ public class Creature : MonoBehaviour
       if (_summonAtkSeekers == true)
       {
 
-        Instantiate(_attackSeekerPrefab, updatedLocation, Quaternion.identity);
+        AttackSeeker atkSeeker = Instantiate(_attackSeekerPrefab, updatedLocation, Quaternion.identity).GetComponent<AttackSeeker>();
+
+        atkSeeker.setAtkSeekerID(_gameData.getAttackSeekers().Count);
+
+        _gameData.addAtkSeeker(atkSeeker);
+
       }
 
     }
@@ -434,7 +390,11 @@ public class Creature : MonoBehaviour
 
       if (_summonAtkSeekers == true)
       {
-        Instantiate(_attackSeekerPrefab, updatedLocation, Quaternion.identity);
+        AttackSeeker atkSeeker = Instantiate(_attackSeekerPrefab, updatedLocation, Quaternion.identity).GetComponent<AttackSeeker>();
+
+        atkSeeker.setAtkSeekerID(_gameData.getAttackSeekers().Count);
+
+        _gameData.addAtkSeeker(atkSeeker);
       }
 
     }
@@ -455,7 +415,11 @@ public class Creature : MonoBehaviour
 
       if (_summonAtkSeekers == true)
       {
-        Instantiate(_attackSeekerPrefab, updatedLocation, Quaternion.identity);
+        AttackSeeker atkSeeker = Instantiate(_attackSeekerPrefab, updatedLocation, Quaternion.identity).GetComponent<AttackSeeker>();
+
+        atkSeeker.setAtkSeekerID(_gameData.getAttackSeekers().Count);
+
+        _gameData.addAtkSeeker(atkSeeker);
       }
 
     }
@@ -476,7 +440,11 @@ public class Creature : MonoBehaviour
 
       if (_summonAtkSeekers == true)
       {
-        Instantiate(_attackSeekerPrefab, updatedLocation, Quaternion.identity);
+        AttackSeeker atkSeeker = Instantiate(_attackSeekerPrefab, updatedLocation, Quaternion.identity).GetComponent<AttackSeeker>();
+
+        atkSeeker.setAtkSeekerID(_gameData.getAttackSeekers().Count);
+
+        _gameData.addAtkSeeker(atkSeeker);
       }
 
     }

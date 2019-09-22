@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 6901546775743837624}
   - component: {fileID: 8615350591298628353}
   - component: {fileID: 8031650588852769737}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Attack_Seeker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -106,3 +106,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94e9470e03ada42bba6b37e87b5c13c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  atkSeekerID: 0

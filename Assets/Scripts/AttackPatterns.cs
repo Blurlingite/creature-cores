@@ -10,10 +10,10 @@ public class AttackPatterns : MonoBehaviour
   private Color _spaceSelectedColor = new Color(0.2F, 0.3F, 0.4F);
   private Color _spaceDeSelectedColor = Color.white;
 
-  private RaycastHit[] _forwardAtkHits;
-  private RaycastHit[] _backwardAtkHits;
-  private RaycastHit[] _leftAtkHits;
-  private RaycastHit[] _rightAtkHits;
+  // private RaycastHit[] _forwardAtkHits;
+  // private RaycastHit[] _backwardAtkHits;
+  // private RaycastHit[] _leftAtkHits;
+  // private RaycastHit[] _rightAtkHits;
   // Start is called before the first frame update
   void Start()
   {
@@ -33,29 +33,54 @@ public class AttackPatterns : MonoBehaviour
 
 
   // fires a ray forward and returns what it hits in a RayCastHit array. All spaces that are hit also change color
-  public RaycastHit[] ForwardAttackPattern(Vector3 playerPosition, float creatureSpaceAtkDistance, float spaceSize)
+  // public RaycastHit[] ForwardAttackPattern(Vector3 atkSeekerPosition, float creatureSpaceAtkDistance, float spaceSize)
+  // {
+
+  //   float rayDistance = creatureSpaceAtkDistance * spaceSize;
+
+  //   Vector3 rayDirection = transform.TransformDirection(Vector3.forward);
+
+  //   Ray ray = new Ray(atkSeekerPosition, rayDirection);
+
+  //   // RayCastAll() will let you get info from each collider the ray passes through (each one the ray hits)
+  //   _forwardAtkHits = Physics.RaycastAll(ray.origin, ray.direction, rayDistance, layerMask);
+
+  //   // Draw the ray (only when it is selected) so you can see where it's hitting in Unity
+  //   Debug.DrawRay(atkSeekerPosition, rayDirection * rayDistance, Color.red);
+
+  //   ShowAtkPattern(_forwardAtkHits);
+
+  //   // return the hits you got from where the ray was fired (from the creature's (that accesses this script) position)
+  //   return _forwardAtkHits;
+
+  // }
+
+  public RaycastHit[] StraightAttackSeekerRay(Vector3 position, Vector3 direction, float maxDistance, float spaceSize, int layerMask, List<Vector3> attackHits)
   {
+    Vector3 pos = position;
 
-    float rayDistance = creatureSpaceAtkDistance * spaceSize;
+    Vector3 rayDirection = transform.TransformDirection(direction);
 
-    Vector3 rayDirection = transform.TransformDirection(Vector3.forward);
+    float rayDistance = maxDistance * spaceSize;
 
-    Ray ray = new Ray(playerPosition, rayDirection);
 
-    // RayCastAll() will let you get info from each collider the ray passes through (each one the ray hits)
-    _forwardAtkHits = Physics.RaycastAll(ray.origin, ray.direction, rayDistance, layerMask);
+    RaycastHit[] hits = Physics.RaycastAll(pos, rayDirection, rayDistance, layerMask);
 
-    // Draw the ray (only when it is selected) so you can see where it's hitting in Unity
-    Debug.DrawRay(playerPosition, rayDirection * rayDistance, Color.red);
+    Debug.DrawRay(pos, rayDirection * rayDistance, Color.red);
 
-    ShowAtkPattern(_forwardAtkHits);
+    ShowAtkPattern(hits);
 
-    // return the hits you got from where the ray was fired (from the creature's (that accesses this script) position)
-    return _forwardAtkHits;
+    for (int i = 0; i < hits.Length; i++)
+    {
+      // add to list so we can compare each coordinates with player position
+      attackHits.Add(hits[i].point);
+    }
+
+
+
+    return hits;
 
   }
-
-
 
 
   // Changes the color of everything that was hit by the RaycastAll() in CalculateMovementPattern() to a "selected" color
@@ -74,20 +99,20 @@ public class AttackPatterns : MonoBehaviour
 
   }
 
-  // void ShowAtkPattern(RaycastHit[] hitsArray)
-  // {
+  public void HideAtkPattern(RaycastHit[] hitsArray)
+  {
 
-  //   for (int i = 0; i < hitsArray.Length; i++)
-  //   {
-  //     // get the info from the current hit
-  //     RaycastHit currentHit = hitsArray[i];
+    for (int i = 0; i < hitsArray.Length; i++)
+    {
+      // get the info from the current hit
+      RaycastHit currentHit = hitsArray[i];
 
-  //     _renderer = currentHit.transform.parent.GetComponent<Renderer>();
+      _renderer = currentHit.transform.parent.GetComponent<Renderer>();
 
-  //     SpaceColorSwitcher(_renderer, _spaceSelectedColor);
-  //   }
+      SpaceColorSwitcher(_renderer, _spaceDeSelectedColor);
+    }
 
-  // }
+  }
 
   // changes color of space by taking in it's Renderer and a Color
   void SpaceColorSwitcher(Renderer spaceRenderer, Color color)
