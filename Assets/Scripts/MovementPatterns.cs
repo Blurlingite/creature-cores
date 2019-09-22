@@ -49,7 +49,7 @@ public class MovementPatterns : MonoBehaviour
     _forwardHits = Physics.RaycastAll(ray.origin, ray.direction, rayDistance, layerMask);
 
     // Draw the ray (only when it is selected) so you can see where it's hitting in Unity
-    Debug.DrawRay(creaturePosition, rayDirection * rayDistance, Color.red);
+    // Debug.DrawRay(creaturePosition, rayDirection * rayDistance, Color.red);
 
     ShowMovementPattern(_forwardHits);
 
@@ -72,7 +72,7 @@ public class MovementPatterns : MonoBehaviour
     _backwardHits = Physics.RaycastAll(ray.origin, ray.direction, rayDistance, layerMask);
 
     // Draw the ray (only when it is selected) so you can see where it's hitting in Unity
-    Debug.DrawRay(creaturePosition, rayDirection * rayDistance, Color.red);
+    // Debug.DrawRay(creaturePosition, rayDirection * rayDistance, Color.red);
 
     ShowMovementPattern(_backwardHits);
 
@@ -95,7 +95,7 @@ public class MovementPatterns : MonoBehaviour
     _leftHits = Physics.RaycastAll(ray.origin, ray.direction, rayDistance, layerMask);
 
     // Draw the ray (only when it is selected) so you can see where it's hitting in Unity
-    Debug.DrawRay(creaturePosition, rayDirection * rayDistance, Color.red);
+    // Debug.DrawRay(creaturePosition, rayDirection * rayDistance, Color.red);
 
     ShowMovementPattern(_leftHits);
 
@@ -118,7 +118,7 @@ public class MovementPatterns : MonoBehaviour
     _rightHits = Physics.RaycastAll(ray.origin, ray.direction, rayDistance, layerMask);
 
     // Draw the ray (only when it is selected) so you can see where it's hitting in Unity
-    Debug.DrawRay(creaturePosition, rayDirection * rayDistance, Color.red);
+    // Debug.DrawRay(creaturePosition, rayDirection * rayDistance, Color.red);
 
     ShowMovementPattern(_rightHits);
 

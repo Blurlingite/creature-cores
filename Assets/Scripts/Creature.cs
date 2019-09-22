@@ -44,6 +44,7 @@ public class Creature : MonoBehaviour
   private float _rightXOffset = 0.5f;
   private float _rightZOffset = 0.0f;
 
+  private bool _summonAtkSeekers = true;
 
 
   // All variables that will be saved to the file go here:
@@ -54,6 +55,7 @@ public class Creature : MonoBehaviour
   // number of spaces this creature can move
   private float _moveDistance = 3.0f;
   private float _attackDistance = 2.0f;
+  private string _attackLine = "Straight";
 
 
   // Start is called before the first frame update
@@ -118,11 +120,11 @@ public class Creature : MonoBehaviour
     // where the creature is currently and movement pattern if it can move
     CreaturePositioning();
 
-    // if (_isSelected == true && _isDown == false)
-    // {
-    //   CreatureIndivAttackPattern();
+    if (_isSelected == true && _isDown == false)
+    {
+      CreatureIndivAttackPattern();
 
-    // }
+    }
 
   }
 
@@ -170,6 +172,7 @@ public class Creature : MonoBehaviour
       _isSelected = true;
       // set the currently selected Creature on the player so the player knows it's position
       _player.setCurrentlySelectedCreature(this.gameObject.GetComponent<Creature>());
+
 
     }
     else
@@ -302,8 +305,10 @@ public class Creature : MonoBehaviour
 
       if (hitPoints != null)
       {
+        //zzzzz
 
-        SummonAttackSeekers(hitPoints, xOffset, zOffset);
+        SummonAttackSeekers(_forwardMovementHits, _backwardMovementHits, _leftMovementHits, _rightMovementHits, _forwardXOffset, _forwardZOffset, _backwardXOffset, _backwardZOffset, _leftXOffset, _leftZOffset, _rightXOffset, _rightZOffset);
+
       }
 
 
@@ -314,7 +319,7 @@ public class Creature : MonoBehaviour
   void AttackPattern(RaycastHit[] hitPoints, float xOffset, float zOffset)
   {
 
-    // zzzz
+
 
     // we get to this method when the creature is in the air, so now we need to check if we pressed the Space key and if we did, compare the player's position with the positions in the movement pattern. If you get a match, move the creature there
     if (Input.GetKeyDown(KeyCode.Space))
@@ -391,25 +396,113 @@ public class Creature : MonoBehaviour
   }
 
 
-  void SummonAttackSeekers(RaycastHit[] rayHits, float xOffset, float zOffset)
+  void SummonAttackSeekers(RaycastHit[] forwardRayHits, RaycastHit[] backwardRayHits, RaycastHit[] leftRayHits, RaycastHit[] rightRayHits, float forwardXOffset, float forwardZOffset, float backwardXOffset, float backwardZOffset, float leftXOffset, float leftZOffset, float rightXOffset, float rightZOffset)
   {
-    for (int i = 0; i < rayHits.Length; i++)
+    // forward
+    for (int i = 0; i < forwardRayHits.Length; i++)
     {
-      RaycastHit currentHit = rayHits[i];
+      RaycastHit currentHit = forwardRayHits[i];
 
-      Vector3 currentLocation = rayHits[i].point;
+      Vector3 currentLocation = forwardRayHits[i].point;
 
 
-      float currentHitX = currentHit.point.x + xOffset;
-      float currentHitZ = currentHit.point.z + zOffset;
+      float currentHitX = currentHit.point.x + forwardXOffset;
+      float currentHitZ = Mathf.Round(currentLocation.z) + forwardZOffset;
 
-      Vector3 updatedLocation = new Vector3(currentLocation.x + xOffset, currentLocation.y + 3.0f, Mathf.Round(currentLocation.z) + zOffset);
+      Vector3 updatedLocation = new Vector3(currentHitX, currentLocation.y + 3.0f, currentHitZ);
 
-      Instantiate(_attackSeekerPrefab, updatedLocation, Quaternion.identity);
+      if (_summonAtkSeekers == true)
+      {
 
+        Instantiate(_attackSeekerPrefab, updatedLocation, Quaternion.identity);
+      }
 
     }
+
+    // backward
+    for (int i = 0; i < backwardRayHits.Length; i++)
+    {
+      RaycastHit currentHit = backwardRayHits[i];
+
+      Vector3 currentLocation = backwardRayHits[i].point;
+
+
+      float currentHitX = currentHit.point.x + backwardXOffset;
+      float currentHitZ = Mathf.Round(currentLocation.z) + backwardZOffset;
+
+      Vector3 updatedLocation = new Vector3(currentHitX, currentLocation.y + 3.0f, currentHitZ);
+
+      if (_summonAtkSeekers == true)
+      {
+        Instantiate(_attackSeekerPrefab, updatedLocation, Quaternion.identity);
+      }
+
+    }
+
+
+    // left
+    for (int i = 0; i < leftRayHits.Length; i++)
+    {
+      RaycastHit currentHit = leftRayHits[i];
+
+      Vector3 currentLocation = leftRayHits[i].point;
+
+
+      float currentHitX = currentHit.point.x + leftXOffset;
+      float currentHitZ = Mathf.Round(currentLocation.z) + leftZOffset;
+
+      Vector3 updatedLocation = new Vector3(currentHitX, currentLocation.y + 3.0f, currentHitZ);
+
+      if (_summonAtkSeekers == true)
+      {
+        Instantiate(_attackSeekerPrefab, updatedLocation, Quaternion.identity);
+      }
+
+    }
+
+
+    // right
+    for (int i = 0; i < rightRayHits.Length; i++)
+    {
+      RaycastHit currentHit = rightRayHits[i];
+
+      Vector3 currentLocation = rightRayHits[i].point;
+
+
+      float currentHitX = currentHit.point.x + rightXOffset;
+      float currentHitZ = Mathf.Round(currentLocation.z) + rightZOffset;
+
+      Vector3 updatedLocation = new Vector3(currentHitX, currentLocation.y + 3.0f, currentHitZ);
+
+      if (_summonAtkSeekers == true)
+      {
+        Instantiate(_attackSeekerPrefab, updatedLocation, Quaternion.identity);
+      }
+
+    }
+    // change to false so we don't keep on instantiating endlessly
+    _summonAtkSeekers = false;
+
   }
+
+
+  public string getAttackLine()
+  {
+    return _attackLine;
+  }
+
+  public float getAttackDistance()
+  {
+    return _attackDistance;
+  }
+
+  public float getSpaceSize()
+  {
+    return _spaceSize;
+  }
+
+
+
 
 
 } // End of Creature class

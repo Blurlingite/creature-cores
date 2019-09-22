@@ -6,6 +6,7 @@ public class AttackPatterns : MonoBehaviour
 {
   private GameData _gameData;
   private Renderer _renderer;
+  private int layerMask = 9;
   private Color _spaceSelectedColor = new Color(0.2F, 0.3F, 0.4F);
   private Color _spaceDeSelectedColor = Color.white;
 
@@ -42,7 +43,7 @@ public class AttackPatterns : MonoBehaviour
     Ray ray = new Ray(playerPosition, rayDirection);
 
     // RayCastAll() will let you get info from each collider the ray passes through (each one the ray hits)
-    _forwardAtkHits = Physics.RaycastAll(ray.origin, ray.direction, rayDistance);
+    _forwardAtkHits = Physics.RaycastAll(ray.origin, ray.direction, rayDistance, layerMask);
 
     // Draw the ray (only when it is selected) so you can see where it's hitting in Unity
     Debug.DrawRay(playerPosition, rayDirection * rayDistance, Color.red);
@@ -72,6 +73,21 @@ public class AttackPatterns : MonoBehaviour
     }
 
   }
+
+  // void ShowAtkPattern(RaycastHit[] hitsArray)
+  // {
+
+  //   for (int i = 0; i < hitsArray.Length; i++)
+  //   {
+  //     // get the info from the current hit
+  //     RaycastHit currentHit = hitsArray[i];
+
+  //     _renderer = currentHit.transform.parent.GetComponent<Renderer>();
+
+  //     SpaceColorSwitcher(_renderer, _spaceSelectedColor);
+  //   }
+
+  // }
 
   // changes color of space by taking in it's Renderer and a Color
   void SpaceColorSwitcher(Renderer spaceRenderer, Color color)

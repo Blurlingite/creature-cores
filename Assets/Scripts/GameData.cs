@@ -9,6 +9,7 @@ public class GameData : MonoBehaviour
 
   IDictionary<short, CreatureToSerialize> p1Creatures = new Dictionary<short, CreatureToSerialize>();
 
+  // private Creature _currentlySelectedCreature;
 
   // Start is called before the first frame update
   void Start()
@@ -61,7 +62,15 @@ public class GameData : MonoBehaviour
 
   }
 
+  // public Creature getCurrentlySelectedCreature()
+  // {
+  //   return _currentlySelectedCreature;
+  // }
 
+  // public void setCurrentlySelectedCreature(Creature creature)
+  // {
+  //   _currentlySelectedCreature = creature;
+  // }
 
 
 } // end of GameData class
