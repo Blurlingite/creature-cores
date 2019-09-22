@@ -17,18 +17,18 @@ public class GameData : MonoBehaviour
   }
 
   // Update is called once per frame
-  void Update()
-  {
+  // void Update()
+  // {
 
-    // When Scene ends, save data to player's file we can put this method call in void OnDestroy() so it only runs once, but for now it will be here
-    //  Player's Symbol data: it's attribute, level, exp it has,     exp to next level, etc.
-    //  Player's entire library of Creatures: each creature's attribute, stats, level, exp gaines, exp need for next level, maximum level, etc. When you buy a creature it gets added to the library and then saved to the file
+  // When Scene ends, save data to player's file we can put this method call in void OnDestroy() so it only runs once, but for now it will be here
+  //  Player's Symbol data: it's attribute, level, exp it has,     exp to next level, etc.
+  //  Player's entire library of Creatures: each creature's attribute, stats, level, exp gaines, exp need for next level, maximum level, etc. When you buy a creature it gets added to the library and then saved to the file
 
-    SaveToFile();
+  // SaveToFile();
 
-    // When a Scene starts, load from the player's file
+  // When a Scene starts, load from the player's file
 
-  }
+  // }
 
 
   // To make this method dynamic, get all Player objects in the scene and get their unique name or tag (Player_1 for player 1, Player_2 for player 2, etc.) 

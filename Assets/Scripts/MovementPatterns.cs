@@ -9,6 +9,9 @@ public class MovementPatterns : MonoBehaviour
   private Color _spaceSelectedColor = Color.blue;
   private Color _spaceDeSelectedColor = Color.white;
 
+  // used to ignore colliders on a certain layer (layer 9 in this case b/c we set it to 9) when casting rays so I don't get unintended hits in the hit arrays and then errors. 
+  // The Player is on layer 9 b/c it's collider was getting in the way
+  private int layerMask = 9;
   private RaycastHit[] _forwardHits;
   private RaycastHit[] _backwardHits;
   private RaycastHit[] _leftHits;
@@ -18,7 +21,7 @@ public class MovementPatterns : MonoBehaviour
   void Start()
   {
 
-    _gameData = GameObject.Find("Game_Data").GetComponent<GameData>();
+    _gameData = GetComponent<GameData>();
     if (_gameData == null)
     {
       Debug.LogError("Game Data object is NULL");
@@ -27,10 +30,10 @@ public class MovementPatterns : MonoBehaviour
   }
 
   // Update is called once per frame
-  void Update()
-  {
+  // void Update()
+  // {
 
-  }
+  // }
 
   // fires a ray forward and returns what it hits in a RayCastHit array. All spaces that are hit also change color
   public RaycastHit[] ForwardMovementPattern(Vector3 creaturePosition, float creatureSpaceMoveDistance, float spaceSize)
@@ -43,7 +46,7 @@ public class MovementPatterns : MonoBehaviour
     Ray ray = new Ray(creaturePosition, rayDirection);
 
     // RayCastAll() will let you get info from each collider the ray passes through (each one the ray hits)
-    _forwardHits = Physics.RaycastAll(ray.origin, ray.direction, rayDistance);
+    _forwardHits = Physics.RaycastAll(ray.origin, ray.direction, rayDistance, layerMask);
 
     // Draw the ray (only when it is selected) so you can see where it's hitting in Unity
     Debug.DrawRay(creaturePosition, rayDirection * rayDistance, Color.red);
@@ -66,7 +69,7 @@ public class MovementPatterns : MonoBehaviour
     Ray ray = new Ray(creaturePosition, rayDirection);
 
     // RayCastAll() will let you get info from each collider the ray passes through (each one the ray hits)
-    _backwardHits = Physics.RaycastAll(ray.origin, ray.direction, rayDistance);
+    _backwardHits = Physics.RaycastAll(ray.origin, ray.direction, rayDistance, layerMask);
 
     // Draw the ray (only when it is selected) so you can see where it's hitting in Unity
     Debug.DrawRay(creaturePosition, rayDirection * rayDistance, Color.red);
@@ -89,7 +92,7 @@ public class MovementPatterns : MonoBehaviour
     Ray ray = new Ray(creaturePosition, rayDirection);
 
     // RayCastAll() will let you get info from each collider the ray passes through (each one the ray hits)
-    _leftHits = Physics.RaycastAll(ray.origin, ray.direction, rayDistance);
+    _leftHits = Physics.RaycastAll(ray.origin, ray.direction, rayDistance, layerMask);
 
     // Draw the ray (only when it is selected) so you can see where it's hitting in Unity
     Debug.DrawRay(creaturePosition, rayDirection * rayDistance, Color.red);
@@ -112,7 +115,7 @@ public class MovementPatterns : MonoBehaviour
     Ray ray = new Ray(creaturePosition, rayDirection);
 
     // RayCastAll() will let you get info from each collider the ray passes through (each one the ray hits)
-    _rightHits = Physics.RaycastAll(ray.origin, ray.direction, rayDistance);
+    _rightHits = Physics.RaycastAll(ray.origin, ray.direction, rayDistance, layerMask);
 
     // Draw the ray (only when it is selected) so you can see where it's hitting in Unity
     Debug.DrawRay(creaturePosition, rayDirection * rayDistance, Color.red);
@@ -126,7 +129,7 @@ public class MovementPatterns : MonoBehaviour
 
 
   // Changes the color of everything that was hit by the RaycastAll() in CalculateMovementPattern() to a "selected" color
-  void ShowMovementPattern(RaycastHit[] hitsArray)
+  public void ShowMovementPattern(RaycastHit[] hitsArray)
   {
 
     for (int i = 0; i < hitsArray.Length; i++)
@@ -135,6 +138,8 @@ public class MovementPatterns : MonoBehaviour
       RaycastHit currentHit = hitsArray[i];
 
       _renderer = currentHit.transform.parent.GetComponent<Renderer>();
+
+
 
       SpaceColorSwitcher(_renderer, _spaceSelectedColor);
     }

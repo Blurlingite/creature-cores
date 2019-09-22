@@ -8,6 +8,10 @@ public class Creature : MonoBehaviour
   private Board _board;
   private GameData _gameData; // get move and attack patterns
   private MovementPatterns _movementPatterns;
+  private AttackPatterns _attackPatterns;
+  [SerializeField]
+  private GameObject _attackSeekerPrefab;
+
   // The player of this creature
   private string _whoseTurnIsIt = "Player_1";
   private bool _stopFalling = false;
@@ -22,6 +26,10 @@ public class Creature : MonoBehaviour
   private RaycastHit[] _forwardMovementHits;
   private float _forwardXOffset = 0.0f;
   private float _forwardZOffset = 1.0f;
+  private RaycastHit[] _forwardAttackHits;
+  private float _forwardXAtkOffset = 0.0f;
+  private float _forwardZAtkOffset = 0.5f;
+
 
   private RaycastHit[] _backwardMovementHits;
   private float _backwardZOffset = -1.0f;
@@ -40,8 +48,13 @@ public class Creature : MonoBehaviour
 
   // All variables that will be saved to the file go here:
 
+  // Player Number
+  private short _playerOwner = 1;
+  private Player _player;
   // number of spaces this creature can move
   private float _moveDistance = 3.0f;
+  private float _attackDistance = 2.0f;
+
 
   // Start is called before the first frame update
   void Start()
@@ -55,6 +68,18 @@ public class Creature : MonoBehaviour
       _spaceSize = _board.getSpaceSize();
     }
 
+
+
+    _player = GameObject.Find("Player_" + _playerOwner).GetComponent<Player>();
+
+    // get the size of each space from the Board component
+    if (_player == null)
+    {
+      Debug.LogError("Player is null ::Creature.cs::Start()");
+    }
+
+
+
     _gameData = GameObject.Find("Game_Data").GetComponent<GameData>();
 
     if (_gameData == null)
@@ -67,6 +92,14 @@ public class Creature : MonoBehaviour
     if (_movementPatterns == null)
     {
       Debug.LogError("Movement Patterns script is NULL and should be on Game Data object");
+    }
+
+
+    _attackPatterns = _gameData.GetComponent<AttackPatterns>();
+
+    if (_attackPatterns == null)
+    {
+      Debug.LogError("Attack Patterns script is NULL and should be on Game Data object");
     }
 
     SaveLocally();
@@ -84,6 +117,12 @@ public class Creature : MonoBehaviour
 
     // where the creature is currently and movement pattern if it can move
     CreaturePositioning();
+
+    // if (_isSelected == true && _isDown == false)
+    // {
+    //   CreatureIndivAttackPattern();
+
+    // }
 
   }
 
@@ -129,6 +168,9 @@ public class Creature : MonoBehaviour
     if (transform.position.y >= 3)
     {
       _isSelected = true;
+      // set the currently selected Creature on the player so the player knows it's position
+      _player.setCurrentlySelectedCreature(this.gameObject.GetComponent<Creature>());
+
     }
     else
     {
@@ -185,6 +227,17 @@ public class Creature : MonoBehaviour
     AllMovementPatterns(thisCreaturesPosition);
   }
 
+  // calculates which spaces the creature can attack and highlights them
+  void CreatureIndivAttackPattern()
+  {
+
+    // Player player1 = GameObject.Find("Player_1").GetComponent<Player>();
+
+    Vector3 player1Position = _player.transform.position;
+
+    AllAttackPatterns(player1Position);
+  }
+
 
   public void setMoveDistance(float NumOfSpacesToMove)
   {
@@ -208,16 +261,22 @@ public class Creature : MonoBehaviour
 
   void MovementPattern(RaycastHit[] hitPoints, float xOffset, float zOffset)
   {
+
+    // Player p1 = GameObject.Find("Player_1").GetComponent<Player>();
+
+    float playerPositionX = _player.transform.position.x;
+    float playerPositionZ = _player.transform.position.z;
     // we get to this method when the creature is in the air, so now we need to check if we pressed the Space key and if we did, compare the player's position with the positions in the movement pattern. If you get a match, move the creature there
     if (Input.GetKeyDown(KeyCode.Space))
     {
-      Player p1 = GameObject.Find("Player_1").GetComponent<Player>();
-      float playerPositionX = p1.transform.position.x;
-      float playerPositionZ = p1.transform.position.z;
+
+
+
 
       for (int i = 0; i < hitPoints.Length; i++)
       {
         RaycastHit currentHit = hitPoints[i];
+
 
         float currentHitX = currentHit.point.x + xOffset;
 
@@ -238,7 +297,63 @@ public class Creature : MonoBehaviour
         }
       }
     }
+    else
+    {
+
+      if (hitPoints != null)
+      {
+
+        SummonAttackSeekers(hitPoints, xOffset, zOffset);
+      }
+
+
+    }
   }
+
+
+  void AttackPattern(RaycastHit[] hitPoints, float xOffset, float zOffset)
+  {
+
+    // zzzz
+
+    // we get to this method when the creature is in the air, so now we need to check if we pressed the Space key and if we did, compare the player's position with the positions in the movement pattern. If you get a match, move the creature there
+    if (Input.GetKeyDown(KeyCode.Space))
+    {
+      // Player p1 = GameObject.Find("Player_1").GetComponent<Player>();
+      float playerPositionX = _player.transform.position.x;
+      float playerPositionZ = _player.transform.position.z;
+
+      for (int i = 0; i < hitPoints.Length; i++)
+      {
+        RaycastHit currentHit = hitPoints[i];
+
+        float currentHitX = currentHit.point.x + xOffset;
+
+        // we Round the only the Z float and then add 1 to fix the ray's calculating error. This only affects the Z and NOT the X
+        float currentHitZ = Mathf.Round(currentHit.point.z) + zOffset;
+
+        if (playerPositionX == currentHitX && playerPositionZ == currentHitZ)
+        {
+          Vector3 attackSpace = new Vector3(currentHitX, _creatureGroundY, currentHitZ);
+
+          // FIX THIS
+          transform.position = attackSpace;
+
+          _isSelected = false;
+          _isDown = true;
+
+
+
+          break;  // to avoid casting another attack pattern
+        }
+      }
+    }
+  }
+
+
+
+
+
 
   // Calculates the creature's entire movement pattern by passing in it's position
   void AllMovementPatterns(Vector3 creaturePosition)
@@ -262,6 +377,38 @@ public class Creature : MonoBehaviour
     _rightMovementHits = _movementPatterns.RightMovementPattern(creaturePosition, _moveDistance, _spaceSize);
 
     MovementPattern(_rightMovementHits, _rightXOffset, _rightZOffset);
+
+  }
+
+  // Calculates the creature's entire movement pattern by passing in it's position
+  void AllAttackPatterns(Vector3 playerPosition)
+  {
+    // forward ray results
+    _forwardAttackHits = _attackPatterns.ForwardAttackPattern(playerPosition, _attackDistance, _spaceSize);
+
+    AttackPattern(_forwardAttackHits, _forwardXAtkOffset, _forwardZAtkOffset);
+
+  }
+
+
+  void SummonAttackSeekers(RaycastHit[] rayHits, float xOffset, float zOffset)
+  {
+    for (int i = 0; i < rayHits.Length; i++)
+    {
+      RaycastHit currentHit = rayHits[i];
+
+      Vector3 currentLocation = rayHits[i].point;
+
+
+      float currentHitX = currentHit.point.x + xOffset;
+      float currentHitZ = currentHit.point.z + zOffset;
+
+      Vector3 updatedLocation = new Vector3(currentLocation.x + xOffset, currentLocation.y + 3.0f, Mathf.Round(currentLocation.z) + zOffset);
+
+      Instantiate(_attackSeekerPrefab, updatedLocation, Quaternion.identity);
+
+
+    }
   }
 
 

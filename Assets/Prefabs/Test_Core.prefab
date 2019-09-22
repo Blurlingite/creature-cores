@@ -123,3 +123,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1db035e61918c4bb3a9c3aecea0478b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _attackSeekerPrefab: {fileID: 7763037668339281917, guid: 9f8e2014d041a4569af0a16a85b7313e,
+    type: 3}

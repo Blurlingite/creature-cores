@@ -2,25 +2,30 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Board : MonoBehaviour
+public class AttackSeeker : MonoBehaviour
 {
-
-  private float _spaceSize = 4.0f;
-  private string _boardSize = "16x16";
   // Start is called before the first frame update
-  void Start()
-  {
+  // void Start()
+  // {
 
-  }
+  // }
 
   // Update is called once per frame
   // void Update()
   // {
 
+
   // }
 
-  public float getSpaceSize()
+
+
+  void OnTriggerEnter(Collider other)
   {
-    return _spaceSize;
+
+    if (other.CompareTag("Player_1"))
+    {
+      Debug.Log("111");
+    }
+
   }
 }
