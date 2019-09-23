@@ -38328,7 +38328,6 @@ GameObject:
   m_Component:
   - component: {fileID: 6746515857944321715}
   - component: {fileID: 6746515857944321714}
-  - component: {fileID: 6746515857944321713}
   - component: {fileID: 6746515857944321712}
   m_Layer: 0
   m_Name: Board
@@ -38619,20 +38618,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea04f823679fb4031a3915378bbbda9f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &6746515857944321713
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6746515857944321719}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b86dcf2bda45a479fb0acc314f6fa089, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _normalCube: {fileID: 5254588859337499377, guid: 3601a3b189cfc41c3ae58f9cce3db02b,
-    type: 3}
 --- !u!65 &6746515857944321712
 BoxCollider:
   m_ObjectHideFlags: 0

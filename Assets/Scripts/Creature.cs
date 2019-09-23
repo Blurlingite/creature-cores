@@ -5,6 +5,9 @@ using System;
 
 public class Creature : MonoBehaviour
 {
+  Vector3 currentPosition;
+  Vector3 oldPosition;
+
   private Board _board;
   private GameData _gameData; // get move and attack patterns
   private MovementPatterns _movementPatterns;
@@ -19,10 +22,9 @@ public class Creature : MonoBehaviour
   private bool _stopFalling = false;
   private bool _isSelected, _isDown = false;
   private bool _summonAtkSeekers, _destroyAtkSeekers = false;
+  // helps stops summoning attack seekers when they are actually being summoned. Which means this can stay true once changed to true for the whole game w/o causing errors
   private bool _stopSummoningAtkSeekers = false;
   private bool _isEnemyHit = false;
-
-  // private bool _isSearchingForEnemy = false;
 
 
   private float _creatureRiseHeight = 3.0f;
@@ -32,6 +34,7 @@ public class Creature : MonoBehaviour
   private float _spaceSize;
 
   // everywhere this creature can move
+  [SerializeField]
   private RaycastHit[] _forwardMovementHits;
   private float _forwardXOffset = 0.0f;
   private float _forwardZOffset = 1.0f;
@@ -52,7 +55,6 @@ public class Creature : MonoBehaviour
   private RaycastHit[] _rightMovementHits;
   private float _rightXOffset = 0.5f;
   private float _rightZOffset = 0.0f;
-
 
 
   // All variables that will be saved to the file go here:
@@ -120,6 +122,8 @@ public class Creature : MonoBehaviour
   void Update()
   {
 
+
+
     if (_spaceSize <= 0.0f)
     {
       Debug.LogError("Cannot get space size, Ray will not be casted");
@@ -128,15 +132,8 @@ public class Creature : MonoBehaviour
     // where the creature is currently and movement pattern if it can move
     CreaturePositioning();
 
-    if (_isSelected == true && _isDown == false && _summonAtkSeekers == true && _stopSummoningAtkSeekers == false)
-    {
+    CreatureAttack();
 
-      SummonAttackSeekers(_forwardMovementHits, _backwardMovementHits, _leftMovementHits, _rightMovementHits, _forwardXOffset, _forwardZOffset, _backwardXOffset, _backwardZOffset, _leftXOffset, _leftZOffset, _rightXOffset, _rightZOffset);
-
-      List<AttackSeeker> allAtkSeekers = _gameData.getAttackSeekers();
-
-
-    }
 
   }
 
@@ -145,23 +142,29 @@ public class Creature : MonoBehaviour
     // If player, move this creature upwards , then cast 4 rays equal to how far this creature can move (ex. 3 spaces forward, backward, left, right)
     if (other.CompareTag("Player_1") && (Input.GetKeyDown(KeyCode.Space)))
     {
+
+      _player.setCurrentlySelectedCreature(this.gameObject.GetComponent<Creature>());
+
       transform.position = new Vector3(transform.position.x, _creatureRiseHeight, transform.position.z);
+
+      AllMovementPatterns(transform.position);
+
+      SummonAttackSeekers(_forwardMovementHits, _backwardMovementHits, _leftMovementHits, _rightMovementHits, _forwardXOffset, _forwardZOffset, _backwardXOffset, _backwardZOffset, _leftXOffset, _leftZOffset, _rightXOffset, _rightZOffset);
+
     }
 
+
     // If the B key is pressed, put the creature back down where it was
-    if (other.CompareTag("Player_1") && Input.GetKeyDown(KeyCode.B))
+    if (other.CompareTag("Player_1") && _isSelected == true && Input.GetKeyDown(KeyCode.B))
     {
       transform.position = new Vector3(transform.position.x, _creatureGroundY, transform.position.z);
 
-      _isSelected = false;
-      _isDown = true;
+
     }
 
 
     if (other.CompareTag("Center_Cube"))
     {
-      Debug.Log("ccc");
-      // Renderer a = other.gameObject.GetComponent<Renderer>();
       Renderer _renderer = other.transform.parent.GetComponent<Renderer>();
 
       MaterialPropertyBlock _propBlock = new MaterialPropertyBlock();
@@ -188,6 +191,9 @@ public class Creature : MonoBehaviour
   // Defines the creature's position currently and where it can move if possible
   void CreaturePositioning()
   {
+    // Current position START
+    currentPosition = transform.position;
+    oldPosition = currentPosition;
 
     if (_stopFalling == false)
     {
@@ -195,24 +201,44 @@ public class Creature : MonoBehaviour
     }
 
     // We know if the creature is selected if it is not on the ground (if the y value is above a certain number)
-    if (transform.position.y >= 3)
+    // RAISE & NOT MOVED
+    if (transform.position.y >= 3 && currentPosition == oldPosition)
     {
+
       _isSelected = true;
       _isDown = false;
       _summonAtkSeekers = true;
-      _destroyAtkSeekers = false;
 
       // set the currently selected Creature on the player so the player knows it's position
       _player.setCurrentlySelectedCreature(this.gameObject.GetComponent<Creature>());
 
 
     }
+    // RAISE & MOVED
+    else if (transform.position.y >= 3 && currentPosition != oldPosition)
+    {
+
+      _isSelected = true;
+      _isDown = false;
+      _summonAtkSeekers = false;
+    }
+
+    // NOT RAISE & NOT MOVE
+
+    else if (transform.position.y < 3 && currentPosition == oldPosition)
+    {
+      _isSelected = false;
+      _isDown = true;
+      _summonAtkSeekers = false;
+    }
+
+    // NOT RAISED & MOVED
     else
     {
       _isSelected = false;
       _isDown = true;
-      _destroyAtkSeekers = true;
-      // _isSearchingForEnemy = true;
+      _summonAtkSeekers = false;
+
       AttackRaysFromCreature(transform.position, Vector3.forward, _attackDistance, _spaceSize, 9);
       AttackRaysFromCreature(transform.position, Vector3.back, _attackDistance, _spaceSize, 9);
       AttackRaysFromCreature(transform.position, Vector3.left, _attackDistance, _spaceSize, 9);
@@ -226,17 +252,14 @@ public class Creature : MonoBehaviour
     if (_isSelected == true)
     {
       // make this false so we know the creature is not down right now (We turned this true in the CreatureIndivMovementPattern() right after this, so if _isDown is changed to false after that method call, the HideMovementPattern() won't be called b/c _isDown must be true to enter it's if statement)
-      // _isDown = false;
       CreatureIndivMovementPattern();
 
       // When I implement a turn system, we will search for the the current player by searching for the tag so we know who can press keys. We dont want Player 2 to press keys during Player 1's turn. We will use the tag to set _whoseTurnIsIt. Then we will exclude all other players except the one with the tag equal to _whoseTurnIsIt
       // When it is player 1's turn, at anytime the creature is in the air and regardless of the player's position, if they press the B key, the creature will be placed down
-      if (_whoseTurnIsIt.Equals("Player_1") && Input.GetKeyDown(KeyCode.B))
+      if (_whoseTurnIsIt.Equals("Player_1") && _isSelected == true && Input.GetKeyDown(KeyCode.B))
       {
         transform.position = new Vector3(transform.position.x, _creatureGroundY, transform.position.z);
 
-        _isSelected = false;
-        _isDown = true;
       }
     }
     else if (_isSelected == false && _isDown == true && _forwardMovementHits != null && _backwardMovementHits != null && _leftMovementHits != null && _rightMovementHits != null)
@@ -365,6 +388,8 @@ public class Creature : MonoBehaviour
     // forward ray results
     _forwardMovementHits = _movementPatterns.ForwardMovementPattern(creaturePosition, _moveDistance, _spaceSize);
 
+
+
     MovementPattern(_forwardMovementHits, _forwardXOffset, _forwardZOffset);
 
     // backward ray results
@@ -387,21 +412,22 @@ public class Creature : MonoBehaviour
 
   void SummonAttackSeekers(RaycastHit[] forwardRayHits, RaycastHit[] backwardRayHits, RaycastHit[] leftRayHits, RaycastHit[] rightRayHits, float forwardXOffset, float forwardZOffset, float backwardXOffset, float backwardZOffset, float leftXOffset, float leftZOffset, float rightXOffset, float rightZOffset)
   {
-    // forward
-    for (int i = 0; i < forwardRayHits.Length; i++)
+
+    if (_stopSummoningAtkSeekers == false)
     {
-      RaycastHit currentHit = forwardRayHits[i];
 
-      Vector3 currentLocation = forwardRayHits[i].point;
-
-
-      float currentHitX = currentHit.point.x + forwardXOffset;
-      float currentHitZ = Mathf.Round(currentLocation.z) + forwardZOffset;
-
-      Vector3 updatedLocation = new Vector3(currentHitX, currentLocation.y + 3.0f, currentHitZ);
-
-      if (_summonAtkSeekers == true)
+      // forward
+      for (int i = 0; i < forwardRayHits.Length; i++)
       {
+
+        RaycastHit currentHit = forwardRayHits[i];
+
+        Vector3 currentLocation = forwardRayHits[i].point;
+
+        float currentHitX = currentHit.point.x + forwardXOffset;
+        float currentHitZ = Mathf.Round(currentLocation.z) + forwardZOffset;
+
+        Vector3 updatedLocation = new Vector3(currentHitX, currentLocation.y + 3.0f, currentHitZ);
 
         AttackSeeker atkSeeker = Instantiate(_attackSeekerPrefab, updatedLocation, Quaternion.identity).GetComponent<AttackSeeker>();
 
@@ -409,86 +435,89 @@ public class Creature : MonoBehaviour
 
         _gameData.addAtkSeeker(atkSeeker);
 
+
       }
 
-    }
 
-    // backward
-    for (int i = 0; i < backwardRayHits.Length; i++)
-    {
-      RaycastHit currentHit = backwardRayHits[i];
-
-      Vector3 currentLocation = backwardRayHits[i].point;
-
-
-      float currentHitX = currentHit.point.x + backwardXOffset;
-      float currentHitZ = Mathf.Round(currentLocation.z) + backwardZOffset;
-
-      Vector3 updatedLocation = new Vector3(currentHitX, currentLocation.y + 3.0f, currentHitZ);
-
-      if (_summonAtkSeekers == true)
+      if (backwardRayHits != null)
       {
-        AttackSeeker atkSeeker = Instantiate(_attackSeekerPrefab, updatedLocation, Quaternion.identity).GetComponent<AttackSeeker>();
+        // backward
+        for (int i = 0; i < backwardRayHits.Length; i++)
+        {
+          RaycastHit currentHit = backwardRayHits[i];
 
-        atkSeeker.setAtkSeekerID(_gameData.getAttackSeekers().Count);
+          Vector3 currentLocation = backwardRayHits[i].point;
 
-        _gameData.addAtkSeeker(atkSeeker);
+
+          float currentHitX = currentHit.point.x + backwardXOffset;
+          float currentHitZ = Mathf.Round(currentLocation.z) + backwardZOffset;
+
+          Vector3 updatedLocation = new Vector3(currentHitX, currentLocation.y + 3.0f, currentHitZ);
+
+
+          AttackSeeker atkSeeker = Instantiate(_attackSeekerPrefab, updatedLocation, Quaternion.identity).GetComponent<AttackSeeker>();
+
+          atkSeeker.setAtkSeekerID(_gameData.getAttackSeekers().Count);
+
+          _gameData.addAtkSeeker(atkSeeker);
+
+        }
       }
 
-    }
 
-
-    // left
-    for (int i = 0; i < leftRayHits.Length; i++)
-    {
-      RaycastHit currentHit = leftRayHits[i];
-
-      Vector3 currentLocation = leftRayHits[i].point;
-
-
-      float currentHitX = currentHit.point.x + leftXOffset;
-      float currentHitZ = Mathf.Round(currentLocation.z) + leftZOffset;
-
-      Vector3 updatedLocation = new Vector3(currentHitX, currentLocation.y + 3.0f, currentHitZ);
-
-      if (_summonAtkSeekers == true)
+      if (leftRayHits != null)
       {
-        AttackSeeker atkSeeker = Instantiate(_attackSeekerPrefab, updatedLocation, Quaternion.identity).GetComponent<AttackSeeker>();
+        // left
+        for (int i = 0; i < leftRayHits.Length; i++)
+        {
+          RaycastHit currentHit = leftRayHits[i];
 
-        atkSeeker.setAtkSeekerID(_gameData.getAttackSeekers().Count);
+          Vector3 currentLocation = leftRayHits[i].point;
 
-        _gameData.addAtkSeeker(atkSeeker);
+
+          float currentHitX = currentHit.point.x + leftXOffset;
+          float currentHitZ = Mathf.Round(currentLocation.z) + leftZOffset;
+
+          Vector3 updatedLocation = new Vector3(currentHitX, currentLocation.y + 3.0f, currentHitZ);
+
+
+          AttackSeeker atkSeeker = Instantiate(_attackSeekerPrefab, updatedLocation, Quaternion.identity).GetComponent<AttackSeeker>();
+
+          atkSeeker.setAtkSeekerID(_gameData.getAttackSeekers().Count);
+
+          _gameData.addAtkSeeker(atkSeeker);
+
+        }
+
       }
 
-    }
-
-
-    // right
-    for (int i = 0; i < rightRayHits.Length; i++)
-    {
-      RaycastHit currentHit = rightRayHits[i];
-
-      Vector3 currentLocation = rightRayHits[i].point;
-
-
-      float currentHitX = currentHit.point.x + rightXOffset;
-      float currentHitZ = Mathf.Round(currentLocation.z) + rightZOffset;
-
-      Vector3 updatedLocation = new Vector3(currentHitX, currentLocation.y + 3.0f, currentHitZ);
-
-      if (_summonAtkSeekers == true)
+      if (rightRayHits != null)
       {
-        AttackSeeker atkSeeker = Instantiate(_attackSeekerPrefab, updatedLocation, Quaternion.identity).GetComponent<AttackSeeker>();
+        // right
+        for (int i = 0; i < rightRayHits.Length; i++)
+        {
+          RaycastHit currentHit = rightRayHits[i];
 
-        atkSeeker.setAtkSeekerID(_gameData.getAttackSeekers().Count);
+          Vector3 currentLocation = rightRayHits[i].point;
 
-        _gameData.addAtkSeeker(atkSeeker);
+
+          float currentHitX = currentHit.point.x + rightXOffset;
+          float currentHitZ = Mathf.Round(currentLocation.z) + rightZOffset;
+
+          Vector3 updatedLocation = new Vector3(currentHitX, currentLocation.y + 3.0f, currentHitZ);
+
+
+          AttackSeeker atkSeeker = Instantiate(_attackSeekerPrefab, updatedLocation, Quaternion.identity).GetComponent<AttackSeeker>();
+
+          atkSeeker.setAtkSeekerID(_gameData.getAttackSeekers().Count);
+
+          _gameData.addAtkSeeker(atkSeeker);
+
+        }
       }
-
     }
-    // change to false so we don't keep on instantiating endlessly
-    _summonAtkSeekers = false;
-    _stopSummoningAtkSeekers = true;
+
+
 
   }
   // changes all spaces on board to white
@@ -511,6 +540,7 @@ public class Creature : MonoBehaviour
 
   public void AttackRaysFromCreature(Vector3 creaturePosition, Vector3 direction, float maxDistance, float spaceSize, int rayLayermask)
   {
+    bool _wasEnemyHitByRay = false;
 
     Vector3 rayDirection = transform.TransformDirection(direction);
 
@@ -522,32 +552,43 @@ public class Creature : MonoBehaviour
     {
       if (r.transform.gameObject.CompareTag("Enemy"))
       {
-        // Debug.Log("NME");
-        _isEnemyHit = true;
-        // Color each space that was hit with attack color
-        foreach (RaycastHit rch in hits)
-        {
-          try
-          {
-            Renderer parentSpace = rch.transform.parent.GetComponent<Renderer>();
-            _attackPatterns.SpaceColorSwitcher(parentSpace, Color.gray);
-          }
-          catch (NullReferenceException e)
-          {
-            // just doing this so the error goes away
-            e.ToString();
-
-          }
-
-        }
+        _wasEnemyHitByRay = true;
       }
+
     }
+
+    // If an enemy was hit, color the spaces in that direction
+    SpaceColorer(hits, _wasEnemyHitByRay);
 
     Debug.DrawRay(creaturePosition, rayDirection * rayDistance, Color.red);
 
 
   }
 
+  public void SpaceColorer(RaycastHit[] hits, bool isEnemyHit)
+  {
+
+    if (isEnemyHit == true)
+    {
+      // Color each space that was hit with attack color
+      foreach (RaycastHit rch in hits)
+      {
+        try
+        {
+          Renderer parentSpace = rch.transform.parent.GetComponent<Renderer>();
+          _attackPatterns.SpaceColorSwitcher(parentSpace, Color.gray);
+        }
+        catch (NullReferenceException e)
+        {
+          // just doing this so the error goes away
+          e.ToString();
+
+        }
+
+      }
+    }
+
+  }
 
   public string getAttackLine()
   {
@@ -573,6 +614,48 @@ public class Creature : MonoBehaviour
   public bool getIsEnemyHit()
   {
     return _isEnemyHit;
+  }
+
+  public void CreatureAttack()
+  {
+
+    // RAISE & NOT MOVE
+    if (_isSelected == true && _isDown == false && _summonAtkSeekers == true)
+    {
+      _destroyAtkSeekers = false;
+
+    }
+    // RAISE & MOVE
+    else if (_isSelected == true && _isDown == false && _summonAtkSeekers == false)
+    {
+
+      _destroyAtkSeekers = false;
+
+      // Shoot rays that search for enemies and if hit, light up those spaces
+      AttackRaysFromCreature(transform.position, Vector3.forward, _attackDistance, _spaceSize, 9);
+
+      AttackRaysFromCreature(transform.position, Vector3.back, _attackDistance, _spaceSize, 9);
+
+      AttackRaysFromCreature(transform.position, Vector3.left, _attackDistance, _spaceSize, 9);
+
+      AttackRaysFromCreature(transform.position, Vector3.right, _attackDistance, _spaceSize, 9);
+    }
+
+    // NOT RAISE & NOT MOVE
+    else if (_isSelected == false && _isDown == true && _summonAtkSeekers == false)
+    {
+      _destroyAtkSeekers = true;
+
+    }
+
+    // NOT RAISED & MOVED
+    else
+    {
+
+      _destroyAtkSeekers = true;
+
+    }
+
   }
 
 
