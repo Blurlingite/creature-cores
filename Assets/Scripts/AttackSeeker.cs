@@ -7,6 +7,7 @@ public class AttackSeeker : MonoBehaviour
   List<Vector3> attackCoordinates = new List<Vector3>();
   // private bool _activateSeeker = false;
   Player player;
+  Creature playerSelectedCreature;
   [SerializeField]
   private int atkSeekerID;
   private AttackPatterns _attackPatterns;
@@ -24,17 +25,25 @@ public class AttackSeeker : MonoBehaviour
 
     player = GameObject.Find("Player_1").GetComponent<Player>();
 
+    playerSelectedCreature = player.getCurrentlySelectedCreature();
+
     _attackPatterns = _gameData.GetComponent<AttackPatterns>();
 
 
   }
 
   // Update is called once per frame
-  // void Update()
-  // {
+  void Update()
+  {
 
+    bool selfDestruct = playerSelectedCreature.getDestroyAtkSeekers();
 
-  // }
+    if (selfDestruct == true)
+    {
+      Destroy(this.gameObject);
+    }
+
+  }
 
 
 
@@ -71,7 +80,10 @@ public class AttackSeeker : MonoBehaviour
 
       _rightAtkHits = _attackPatterns.StraightAttackSeekerRay(position, Vector3.right, attackDistance, spaceSize, layerMask, attackCoordinates);
     }
-
+    if (other.CompareTag("Creature"))
+    {
+      Debug.Log("core");
+    }
 
   }
 
@@ -81,13 +93,15 @@ public class AttackSeeker : MonoBehaviour
     // hide attack pattern when player leaves this attack seeker
     if (other.CompareTag("Player_1"))
     {
-      Debug.Log("go");
+      // Debug.Log("go");
       _attackPatterns.HideAtkPattern(_forwardAtkHits);
       _attackPatterns.HideAtkPattern(_backwardAtkHits);
       _attackPatterns.HideAtkPattern(_leftAtkHits);
       _attackPatterns.HideAtkPattern(_rightAtkHits);
 
     }
+
+
 
   }
 

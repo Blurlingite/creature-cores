@@ -115,7 +115,7 @@ public class AttackPatterns : MonoBehaviour
   }
 
   // changes color of space by taking in it's Renderer and a Color
-  void SpaceColorSwitcher(Renderer spaceRenderer, Color color)
+  public void SpaceColorSwitcher(Renderer spaceRenderer, Color color)
   {
 
     MaterialPropertyBlock _propBlock = new MaterialPropertyBlock();

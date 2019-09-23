@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using System;
 
 public class Creature : MonoBehaviour
 {
@@ -14,8 +14,17 @@ public class Creature : MonoBehaviour
 
   // The player of this creature
   private string _whoseTurnIsIt = "Player_1";
+
+  // When implementing turns, reset all these bools to these default values, so Attack Seekers can respawn with each creature movement pattern
   private bool _stopFalling = false;
-  private bool _isSelected, _isDown = true;
+  private bool _isSelected, _isDown = false;
+  private bool _summonAtkSeekers, _destroyAtkSeekers = false;
+  private bool _stopSummoningAtkSeekers = false;
+  private bool _isEnemyHit = false;
+
+  // private bool _isSearchingForEnemy = false;
+
+
   private float _creatureRiseHeight = 3.0f;
   // The Y position the creature needs to be to be on the ground
   private float _creatureGroundY = 1.04f;
@@ -44,7 +53,6 @@ public class Creature : MonoBehaviour
   private float _rightXOffset = 0.5f;
   private float _rightZOffset = 0.0f;
 
-  private bool _summonAtkSeekers = true;
 
 
   // All variables that will be saved to the file go here:
@@ -120,12 +128,13 @@ public class Creature : MonoBehaviour
     // where the creature is currently and movement pattern if it can move
     CreaturePositioning();
 
-    if (_isSelected == true && _isDown == false)
+    if (_isSelected == true && _isDown == false && _summonAtkSeekers == true && _stopSummoningAtkSeekers == false)
     {
 
       SummonAttackSeekers(_forwardMovementHits, _backwardMovementHits, _leftMovementHits, _rightMovementHits, _forwardXOffset, _forwardZOffset, _backwardXOffset, _backwardZOffset, _leftXOffset, _leftZOffset, _rightXOffset, _rightZOffset);
 
       List<AttackSeeker> allAtkSeekers = _gameData.getAttackSeekers();
+
 
     }
 
@@ -146,6 +155,22 @@ public class Creature : MonoBehaviour
 
       _isSelected = false;
       _isDown = true;
+    }
+
+
+    if (other.CompareTag("Center_Cube"))
+    {
+      Debug.Log("ccc");
+      // Renderer a = other.gameObject.GetComponent<Renderer>();
+      Renderer _renderer = other.transform.parent.GetComponent<Renderer>();
+
+      MaterialPropertyBlock _propBlock = new MaterialPropertyBlock();
+
+      _renderer.GetPropertyBlock(_propBlock);
+      // Assign our new value.
+      _propBlock.SetColor("_Color", Color.white);
+      // Apply the edited values to the renderer.
+      _renderer.SetPropertyBlock(_propBlock);
     }
 
   }
@@ -173,6 +198,10 @@ public class Creature : MonoBehaviour
     if (transform.position.y >= 3)
     {
       _isSelected = true;
+      _isDown = false;
+      _summonAtkSeekers = true;
+      _destroyAtkSeekers = false;
+
       // set the currently selected Creature on the player so the player knows it's position
       _player.setCurrentlySelectedCreature(this.gameObject.GetComponent<Creature>());
 
@@ -181,6 +210,15 @@ public class Creature : MonoBehaviour
     else
     {
       _isSelected = false;
+      _isDown = true;
+      _destroyAtkSeekers = true;
+      // _isSearchingForEnemy = true;
+      AttackRaysFromCreature(transform.position, Vector3.forward, _attackDistance, _spaceSize, 9);
+      AttackRaysFromCreature(transform.position, Vector3.back, _attackDistance, _spaceSize, 9);
+      AttackRaysFromCreature(transform.position, Vector3.left, _attackDistance, _spaceSize, 9);
+      AttackRaysFromCreature(transform.position, Vector3.right, _attackDistance, _spaceSize, 9);
+
+      ClearBoardColor();
     }
 
 
@@ -188,7 +226,7 @@ public class Creature : MonoBehaviour
     if (_isSelected == true)
     {
       // make this false so we know the creature is not down right now (We turned this true in the CreatureIndivMovementPattern() right after this, so if _isDown is changed to false after that method call, the HideMovementPattern() won't be called b/c _isDown must be true to enter it's if statement)
-      _isDown = false;
+      // _isDown = false;
       CreatureIndivMovementPattern();
 
       // When I implement a turn system, we will search for the the current player by searching for the tag so we know who can press keys. We dont want Player 2 to press keys during Player 1's turn. We will use the tag to set _whoseTurnIsIt. Then we will exclude all other players except the one with the tag equal to _whoseTurnIsIt
@@ -450,6 +488,63 @@ public class Creature : MonoBehaviour
     }
     // change to false so we don't keep on instantiating endlessly
     _summonAtkSeekers = false;
+    _stopSummoningAtkSeekers = true;
+
+  }
+  // changes all spaces on board to white
+  public void ClearBoardColor()
+  {
+    Renderer[] allSpaceRenderers = _board.GetComponentsInChildren<Renderer>();
+
+    foreach (Renderer r in allSpaceRenderers)
+    {
+      MaterialPropertyBlock _propBlock = new MaterialPropertyBlock();
+
+      r.GetPropertyBlock(_propBlock);
+      // Assign our new value.
+      _propBlock.SetColor("_Color", Color.white);
+      // Apply the edited values to the renderer.
+      r.SetPropertyBlock(_propBlock);
+    }
+  }
+
+
+  public void AttackRaysFromCreature(Vector3 creaturePosition, Vector3 direction, float maxDistance, float spaceSize, int rayLayermask)
+  {
+
+    Vector3 rayDirection = transform.TransformDirection(direction);
+
+    float rayDistance = maxDistance * spaceSize;
+
+    RaycastHit[] hits = Physics.RaycastAll(creaturePosition, rayDirection, rayDistance, rayLayermask);
+
+    foreach (RaycastHit r in hits)
+    {
+      if (r.transform.gameObject.CompareTag("Enemy"))
+      {
+        // Debug.Log("NME");
+        _isEnemyHit = true;
+        // Color each space that was hit with attack color
+        foreach (RaycastHit rch in hits)
+        {
+          try
+          {
+            Renderer parentSpace = rch.transform.parent.GetComponent<Renderer>();
+            _attackPatterns.SpaceColorSwitcher(parentSpace, Color.gray);
+          }
+          catch (NullReferenceException e)
+          {
+            // just doing this so the error goes away
+            e.ToString();
+
+          }
+
+        }
+      }
+    }
+
+    Debug.DrawRay(creaturePosition, rayDirection * rayDistance, Color.red);
+
 
   }
 
@@ -469,6 +564,16 @@ public class Creature : MonoBehaviour
     return _spaceSize;
   }
 
+
+  public bool getDestroyAtkSeekers()
+  {
+    return _destroyAtkSeekers;
+  }
+
+  public bool getIsEnemyHit()
+  {
+    return _isEnemyHit;
+  }
 
 
 
