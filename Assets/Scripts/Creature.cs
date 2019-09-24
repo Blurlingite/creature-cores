@@ -24,14 +24,16 @@ public class Creature : MonoBehaviour
   private bool _summonAtkSeekers, _destroyAtkSeekers = false;
   // helps stops summoning attack seekers when they are actually being summoned. Which means this can stay true once changed to true for the whole game w/o causing errors
   private bool _stopSummoningAtkSeekers = false;
-  private bool _isEnemyHit = false;
-
+  private bool _wasEnemyHitByRay = false;
+  private bool _isNewLocation = false;
 
   private float _creatureRiseHeight = 3.0f;
   // The Y position the creature needs to be to be on the ground
   private float _creatureGroundY = 1.04f;
   // size of each space on the board (x or y value)
   private float _spaceSize;
+
+  private int layerMask = 9;
 
   // everywhere this creature can move
   [SerializeField]
@@ -142,6 +144,9 @@ public class Creature : MonoBehaviour
     // If player, move this creature upwards , then cast 4 rays equal to how far this creature can move (ex. 3 spaces forward, backward, left, right)
     if (other.CompareTag("Player_1") && (Input.GetKeyDown(KeyCode.Space)))
     {
+      // Current position START
+      currentPosition = transform.position;
+      oldPosition = currentPosition;
 
       _player.setCurrentlySelectedCreature(this.gameObject.GetComponent<Creature>());
 
@@ -191,9 +196,7 @@ public class Creature : MonoBehaviour
   // Defines the creature's position currently and where it can move if possible
   void CreaturePositioning()
   {
-    // Current position START
-    currentPosition = transform.position;
-    oldPosition = currentPosition;
+
 
     if (_stopFalling == false)
     {
@@ -238,11 +241,6 @@ public class Creature : MonoBehaviour
       _isSelected = false;
       _isDown = true;
       _summonAtkSeekers = false;
-
-      AttackRaysFromCreature(transform.position, Vector3.forward, _attackDistance, _spaceSize, 9);
-      AttackRaysFromCreature(transform.position, Vector3.back, _attackDistance, _spaceSize, 9);
-      AttackRaysFromCreature(transform.position, Vector3.left, _attackDistance, _spaceSize, 9);
-      AttackRaysFromCreature(transform.position, Vector3.right, _attackDistance, _spaceSize, 9);
 
       ClearBoardColor();
     }
@@ -334,6 +332,8 @@ public class Creature : MonoBehaviour
         {
           Vector3 newLocation = new Vector3(currentHitX, _creatureGroundY, currentHitZ);
           transform.position = newLocation;
+
+          _isNewLocation = true;
 
           _isSelected = false;
           _isDown = true;
@@ -540,7 +540,6 @@ public class Creature : MonoBehaviour
 
   public void AttackRaysFromCreature(Vector3 creaturePosition, Vector3 direction, float maxDistance, float spaceSize, int rayLayermask)
   {
-    bool _wasEnemyHitByRay = false;
 
     Vector3 rayDirection = transform.TransformDirection(direction);
 
@@ -611,9 +610,9 @@ public class Creature : MonoBehaviour
     return _destroyAtkSeekers;
   }
 
-  public bool getIsEnemyHit()
+  public bool getWasEnemyHitByRay()
   {
-    return _isEnemyHit;
+    return _wasEnemyHitByRay;
   }
 
   public void CreatureAttack()
@@ -631,20 +630,23 @@ public class Creature : MonoBehaviour
 
       _destroyAtkSeekers = false;
 
-      // Shoot rays that search for enemies and if hit, light up those spaces
-      AttackRaysFromCreature(transform.position, Vector3.forward, _attackDistance, _spaceSize, 9);
 
-      AttackRaysFromCreature(transform.position, Vector3.back, _attackDistance, _spaceSize, 9);
-
-      AttackRaysFromCreature(transform.position, Vector3.left, _attackDistance, _spaceSize, 9);
-
-      AttackRaysFromCreature(transform.position, Vector3.right, _attackDistance, _spaceSize, 9);
     }
 
     // NOT RAISE & NOT MOVE
     else if (_isSelected == false && _isDown == true && _summonAtkSeekers == false)
     {
       _destroyAtkSeekers = true;
+
+
+      if (_isNewLocation == true)
+      {
+        AttackRaysFromCreature(transform.position, Vector3.forward, _attackDistance, _spaceSize, layerMask);
+        AttackRaysFromCreature(transform.position, Vector3.back, _attackDistance, _spaceSize, layerMask);
+        AttackRaysFromCreature(transform.position, Vector3.left, _attackDistance, _spaceSize, layerMask);
+        AttackRaysFromCreature(transform.position, Vector3.right, _attackDistance, _spaceSize, layerMask);
+      }
+
 
     }
 

@@ -5,10 +5,10 @@ using UnityEngine;
 public class Enemy : MonoBehaviour
 {
   // Start is called before the first frame update
-  // void Start()
-  // {
+  void Start()
+  {
 
-  // }
+  }
 
   // Update is called once per frame
   // void Update()
@@ -27,7 +27,7 @@ public class Enemy : MonoBehaviour
 
       Creature creature = player.getCurrentlySelectedCreature();
 
-      if (creature.getIsEnemyHit() == true && Input.GetKeyDown(KeyCode.X))
+      if (creature.getWasEnemyHitByRay() == true && Input.GetKeyDown(KeyCode.X))
       {
         Debug.Log("Attack");
       }
