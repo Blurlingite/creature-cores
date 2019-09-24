@@ -16,6 +16,7 @@ public class AttackSeeker : MonoBehaviour
   private RaycastHit[] _backwardAtkHits;
   private RaycastHit[] _leftAtkHits;
   private RaycastHit[] _rightAtkHits;
+
   // Start is called before the first frame update
   void Start()
   {
@@ -105,5 +106,7 @@ public class AttackSeeker : MonoBehaviour
   {
     atkSeekerID = seekerID;
   }
+
+
 
 }

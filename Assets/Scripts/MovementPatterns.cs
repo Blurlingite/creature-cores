@@ -137,11 +137,15 @@ public class MovementPatterns : MonoBehaviour
       // get the info from the current hit
       RaycastHit currentHit = hitsArray[i];
 
-      _renderer = currentHit.transform.parent.GetComponent<Renderer>();
+      // Ignore Enemy hits in the array you can't get their parent's renderer b/c they dont have a parent object
+      if (!currentHit.transform.CompareTag("Enemy"))
+      {
+        _renderer = currentHit.transform.parent.GetComponent<Renderer>();
+
+        SpaceColorSwitcher(_renderer, _spaceSelectedColor);
+      }
 
 
-
-      SpaceColorSwitcher(_renderer, _spaceSelectedColor);
     }
 
   }
@@ -154,9 +158,13 @@ public class MovementPatterns : MonoBehaviour
     {
       RaycastHit currentHit = hitsArray[i];
 
-      _renderer = currentHit.transform.parent.GetComponent<Renderer>();
+      // Ignore Enemy hits in the array you can't get their parent's renderer b/c they dont have a parent object
+      if (!currentHit.transform.CompareTag("Enemy"))
+      {
+        _renderer = currentHit.transform.parent.GetComponent<Renderer>();
 
-      SpaceColorSwitcher(_renderer, _spaceDeSelectedColor);
+        SpaceColorSwitcher(_renderer, _spaceDeSelectedColor);
+      }
     }
 
   }
