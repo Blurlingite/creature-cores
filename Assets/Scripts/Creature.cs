@@ -24,7 +24,9 @@ public class Creature : MonoBehaviour
   private bool _summonAtkSeekers, _destroyAtkSeekers = false;
   // helps stops summoning attack seekers when they are actually being summoned. Which means this can stay true once changed to true for the whole game w/o causing errors
   private bool _stopSummoningAtkSeekers = false;
+  [SerializeField]
   private bool _wasEnemyHitByRay = false;
+  [SerializeField]
   private bool _isNewLocation = false;
 
   private float _creatureRiseHeight = 3.0f;
@@ -163,7 +165,7 @@ public class Creature : MonoBehaviour
     if (other.CompareTag("Player_1") && _isSelected == true && Input.GetKeyDown(KeyCode.B))
     {
       transform.position = new Vector3(transform.position.x, _creatureGroundY, transform.position.z);
-
+      _isNewLocation = false;
 
     }
 
@@ -338,11 +340,22 @@ public class Creature : MonoBehaviour
           _isSelected = false;
           _isDown = true;
 
+          try
+          {
+            _attackPatterns.HideAtkPattern(movementHitPoints);
+
+          }
+          catch (System.Exception)
+          {
+            // throw;
+          }
+
+
+
           break;  // to avoid casting another movement pattern
         }
       }
     }
-
   }
 
 
@@ -352,7 +365,6 @@ public class Creature : MonoBehaviour
     // we get to this method when the creature is in the air, so now we need to check if we pressed the Space key and if we did, compare the player's position with the positions in the movement pattern. If you get a match, move the creature there
     if (Input.GetKeyDown(KeyCode.Space))
     {
-      // Player p1 = GameObject.Find("Player_1").GetComponent<Player>();
       float playerPositionX = _player.transform.position.x;
       float playerPositionZ = _player.transform.position.z;
 
@@ -610,10 +622,16 @@ public class Creature : MonoBehaviour
     return _destroyAtkSeekers;
   }
 
+  public bool getIsDown()
+  {
+    return _isDown;
+  }
+
   public bool getWasEnemyHitByRay()
   {
     return _wasEnemyHitByRay;
   }
+
 
   public void CreatureAttack()
   {
@@ -639,12 +657,16 @@ public class Creature : MonoBehaviour
       _destroyAtkSeekers = true;
 
 
+
       if (_isNewLocation == true)
       {
         AttackRaysFromCreature(transform.position, Vector3.forward, _attackDistance, _spaceSize, layerMask);
         AttackRaysFromCreature(transform.position, Vector3.back, _attackDistance, _spaceSize, layerMask);
         AttackRaysFromCreature(transform.position, Vector3.left, _attackDistance, _spaceSize, layerMask);
         AttackRaysFromCreature(transform.position, Vector3.right, _attackDistance, _spaceSize, layerMask);
+
+
+
       }
 
 
