@@ -53,29 +53,43 @@ public class AttackSeeker : MonoBehaviour
     if (other.CompareTag("Player_1"))
     {
 
-      Vector3 position = transform.position;
+      if (!Input.GetKey(KeyCode.B))
+      {
 
-      Player player = other.transform.gameObject.GetComponent<Player>();
+        Vector3 position = transform.position;
 
-      Creature creature = player.getCurrentlySelectedCreature();
+        Player player = other.transform.gameObject.GetComponent<Player>();
 
-
-      float spaceSize = creature.getSpaceSize();
-
-      int layerMask = player.getlayerMask();
-
-      float attackDistance = creature.getAttackDistance();
-
-      _forwardAtkHits = _attackPatterns.StraightAttackSeekerRay(position, Vector3.forward, attackDistance, spaceSize, layerMask, attackCoordinates);
-
-      _backwardAtkHits = _attackPatterns.StraightAttackSeekerRay(position, Vector3.back, attackDistance, spaceSize, layerMask, attackCoordinates);
-
-      _leftAtkHits = _attackPatterns.StraightAttackSeekerRay(position, Vector3.left, attackDistance, spaceSize, layerMask, attackCoordinates);
-
-      _rightAtkHits = _attackPatterns.StraightAttackSeekerRay(position, Vector3.right, attackDistance, spaceSize, layerMask, attackCoordinates);
+        Creature creature = player.getCurrentlySelectedCreature();
 
 
+        float spaceSize = creature.getSpaceSize();
+
+        int layerMask = player.getlayerMask();
+
+        float attackDistance = creature.getAttackDistance();
+
+        _forwardAtkHits = _attackPatterns.StraightAttackSeekerRay(position, Vector3.forward, attackDistance, spaceSize, layerMask, attackCoordinates);
+
+        _backwardAtkHits = _attackPatterns.StraightAttackSeekerRay(position, Vector3.back, attackDistance, spaceSize, layerMask, attackCoordinates);
+
+        _leftAtkHits = _attackPatterns.StraightAttackSeekerRay(position, Vector3.left, attackDistance, spaceSize, layerMask, attackCoordinates);
+
+        _rightAtkHits = _attackPatterns.StraightAttackSeekerRay(position, Vector3.right, attackDistance, spaceSize, layerMask, attackCoordinates);
+
+      }
+
+      // If we press the B key while under an attack seeker, the Attack pattern should be hidden so we don't see it while the creature is on the ground
+      else if (Input.GetKey(KeyCode.B))
+      {
+
+        _attackPatterns.HideAtkPattern(_forwardAtkHits);
+        _attackPatterns.HideAtkPattern(_backwardAtkHits);
+        _attackPatterns.HideAtkPattern(_leftAtkHits);
+        _attackPatterns.HideAtkPattern(_rightAtkHits);
+      }
     }
+
     if (other.CompareTag("Creature"))
     {
       Debug.Log("core");
