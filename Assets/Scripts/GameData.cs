@@ -7,13 +7,10 @@ using UnityEngine;
 public class GameData : MonoBehaviour
 {
 
-  IDictionary<short, CreatureToSerialize> p1Creatures = new Dictionary<short, CreatureToSerialize>();
+  private IDictionary<short, CreatureToSerialize> p1Creatures = new Dictionary<short, CreatureToSerialize>();
 
-  List<AttackSeeker> attackSeekers = new List<AttackSeeker>();
+  private List<AttackSeeker> attackSeekers = new List<AttackSeeker>();
 
-
-
-  // private Creature _currentlySelectedCreature;
 
   // Start is called before the first frame update
   void Start()
@@ -40,7 +37,6 @@ public class GameData : MonoBehaviour
   // Then depending on that change the Dictionary you use and the file name used
   void SaveToFile()
   {
-
     for (short i = 0; i < p1Creatures.Count; i++)
     {
       // need this to store the result
@@ -53,29 +49,15 @@ public class GameData : MonoBehaviour
       string json = JsonUtility.ToJson(creature);
       File.WriteAllText(Application.dataPath + "/SaveFiles/Player1Save.txt", json);
     }
-
   }
 
 
   public void AddToCreatureDictionary(CreatureToSerialize creature)
   {
-
     // get size of dict and assign that as the ID. If 0, ID is 0. Now there will be 1 creature in there so when we add the next creature, there will be 1 in the dictionary so the ID will be 1, etc.
     short dictionaryID = (Int16)p1Creatures.Count;
     p1Creatures.Add(dictionaryID, creature);
-
   }
-
-  // public Creature getCurrentlySelectedCreature()
-  // {
-  //   return _currentlySelectedCreature;
-  // }
-
-  // public void setCurrentlySelectedCreature(Creature creature)
-  // {
-  //   _currentlySelectedCreature = creature;
-  // }
-
 
 
   public void addAtkSeeker(AttackSeeker atkSeeker)
@@ -88,5 +70,9 @@ public class GameData : MonoBehaviour
   {
     return attackSeekers;
   }
+
+
+
+
 } // end of GameData class
 

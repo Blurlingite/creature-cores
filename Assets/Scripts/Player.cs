@@ -6,29 +6,23 @@ public class Player : MonoBehaviour
 
   // eventually we will get this ID from the Game_Data object so we know which player this is. We will assign Player 1 a color and when we try to select a core the core will check if the player's ID matches the color on the core. (Ex. Player 1 can move blue cores, Player 2 can move green cores, etc.) If it does, that player can move the core but if it doesn't then they can't
   private int _playerID = 1;
-
   private int _layerMask = 9;
-
+  private Creature _currentlySelectedCreature;
   private Vector3 _oldPosition;
   private Vector3 _currentPosition;
   private bool _isLocationNew = false;
 
 
-  private Creature _currentlySelectedCreature;
 
   // Start is called before the first frame update
   void Start()
   {
-
-
   }
 
   // Update is called once per frame
   void Update()
   {
-
     CalculateMovement();
-
   }
 
   void CalculateMovement()
@@ -67,11 +61,7 @@ public class Player : MonoBehaviour
     if (_currentPosition != _oldPosition)
     {
       _isLocationNew = true;
-      // Debug.Log("NOOOO");
-      // Debug.Log(_isLocationNew);
-
     }
-
   }
 
   public Creature getCurrentlySelectedCreature()

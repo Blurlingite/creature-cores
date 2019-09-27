@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Enemy : MonoBehaviour {
+public class Enemy : MonoBehaviour
+{
   // Start is called before the first frame update
-  void Start () {
+  void Start()
+  {
 
   }
 
@@ -14,29 +16,20 @@ public class Enemy : MonoBehaviour {
 
   // }
 
-  void OnTriggerStay (Collider other) {
-    if (other.CompareTag ("Player_1")) {
+  void OnTriggerStay(Collider other)
+  {
+    if (other.CompareTag("Player_1"))
+    {
+      Player player = other.GetComponent<Player>();
 
-      Player player = other.GetComponent<Player> ();
+      Creature creature = player.getCurrentlySelectedCreature();
 
-      Creature creature = player.getCurrentlySelectedCreature ();
-
-      if (creature.getIsEnemySensedByAttackSeeker () == true && Input.GetKeyDown (KeyCode.X)) {
-        Debug.Log ("Attack");
+      if (creature.getIsEnemySensedByAttackSeeker() == true && Input.GetKeyDown(KeyCode.X))
+      {
+        Debug.Log("Attack");
       }
     }
-
   }
 
-  // void OnTriggerExit (Collider other) {
-  //   if (other.CompareTag ("Player_1")) {
 
-  //     Player player = other.GetComponent<Player> ();
-
-  //     Creature creature = player.getCurrentlySelectedCreature ();
-
-  //     creature.setIsEnemySensedByAttackSeeker (false);
-  //   }
-
-  // }
-}
+} // End of Enemy class

@@ -40,12 +40,9 @@ public class AttackPatterns : MonoBehaviour
 
     float rayDistance = maxDistance * spaceSize;
 
-
     RaycastHit[] hits = Physics.RaycastAll(pos, rayDirection, rayDistance, layerMask);
 
-
     Debug.DrawRay(pos, rayDirection * rayDistance, Color.red);
-
 
     ShowAtkPattern(hits);
 
@@ -55,7 +52,6 @@ public class AttackPatterns : MonoBehaviour
       attackHits.Add(hits[i].point);
     }
 
-
     return hits;
 
   }
@@ -64,7 +60,6 @@ public class AttackPatterns : MonoBehaviour
   // Changes the color of everything that was hit by the RaycastAll() in CalculateMovementPattern() to a "selected" color
   void ShowAtkPattern(RaycastHit[] hitsArray)
   {
-
     for (int i = 0; i < hitsArray.Length; i++)
     {
       // get the info from the current hit
@@ -78,12 +73,9 @@ public class AttackPatterns : MonoBehaviour
       }
       catch (System.Exception)
       {
-
         // throw;
       }
-
     }
-
   }
 
   public void HideAtkPattern(RaycastHit[] hitsArray)
@@ -107,18 +99,13 @@ public class AttackPatterns : MonoBehaviour
     }
     catch (System.Exception)
     {
-
       // throw;
     }
-
-
-
   }
 
   // changes color of space by taking in it's Renderer and a Color
   public void SpaceColorSwitcher(Renderer spaceRenderer, Color color)
   {
-
     MaterialPropertyBlock _propBlock = new MaterialPropertyBlock();
 
     // Get the current value of the material properties in the renderer (which should be the Material we gave a custom shader to that we assigned (to the parent in this case) in Unity)
@@ -128,8 +115,6 @@ public class AttackPatterns : MonoBehaviour
     _propBlock.SetColor("_Color", color);
     // Apply the edited values to the renderer.
     spaceRenderer.SetPropertyBlock(_propBlock);
-
-
   }
 
 
