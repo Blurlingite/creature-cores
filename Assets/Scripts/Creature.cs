@@ -66,67 +66,62 @@ public class Creature : MonoBehaviour
   // number of spaces this creature can move
   private float _moveDistance = 3.0f;
   private float _attackDistance = 2.0f;
+  private string _moveLine = "Straight";
   private string _attackLine = "Straight";
 
   // Start is called before the first frame update
   void Start()
   {
-    _board = GameObject.Find("Board").GetComponent<Board>();
-
-    // get the size of each space from the Board component
-    if (_board != null)
-    {
-      _spaceSize = _board.getSpaceSize();
-    }
-
-    _player = GameObject.Find("Player_" + _playerOwner).GetComponent<Player>();
-
-    // get the size of each space from the Board component
-    if (_player == null)
-    {
-      Debug.LogError("Player is null ::Creature.cs::Start()");
-    }
-
-    _gameData = GameObject.Find("Game_Data").GetComponent<GameData>();
-
-    if (_gameData == null)
-    {
-      Debug.LogError("Game Data object is NULL");
-    }
-
-    _movementPatterns = _gameData.GetComponent<MovementPatterns>();
-
-    if (_movementPatterns == null)
-    {
-      Debug.LogError("Movement Patterns script is NULL and should be on Game Data object");
-    }
-
-    _attackPatterns = _gameData.GetComponent<AttackPatterns>();
-
-    if (_attackPatterns == null)
-    {
-      Debug.LogError("Attack Patterns script is NULL and should be on Game Data object");
-    }
+    FindAndLoadResources();
 
     SaveLocally();
   }
 
+
+
   // Update is called once per frame
   void Update()
   {
+
+
+    Debug.DrawRay(transform.position, new Vector3(-1, 0, -1) * _moveDistance * _spaceSize, Color.red);
+
+
+
     if (_spaceSize <= 0.0f)
     {
       Debug.LogError("Cannot get space size, Ray will not be casted");
     }
 
-    // where the creature is currently and movement pattern if it can move
-    CreaturePositioning();
+    switch (_moveLine)
+    {
+      case "Straight":
+        CreatureStraightPositioning();
+        break;
+      case "Diagonal":
+        CreatureDiagonalPositioning();
+        break;
+      default:
+        Debug.Log("Other value");
+        break;
+    }
 
-    CreatureAttack();
+
+    switch (_attackLine)
+    {
+      case "Straight":
+        CreatureStraightAttack();
+        break;
+      default:
+        Debug.Log("Other value");
+        break;
+    }
+
+
   }
 
-  // Defines the creature's position currently and where it can move if possible
-  void CreaturePositioning()
+  // Defines the creature's position (for straight line movement) currently and where it can move if possible
+  void CreatureStraightPositioning()
   {
     if (_stopFalling == false)
     {
@@ -192,8 +187,8 @@ public class Creature : MonoBehaviour
     }
   }
 
-
-  public void CreatureAttack()
+  // determines where the creature can attack (in a straight line only)
+  public void CreatureStraightAttack()
   {
     // RAISE & NOT MOVE
     if (_isSelected == true && _isDown == false && _summonAtkSeekers == true)
@@ -297,30 +292,59 @@ public class Creature : MonoBehaviour
   // Calculates the creature's entire movement pattern by passing in it's position
   void AllMovementPatterns(Vector3 creaturePosition)
   {
+
     // forward ray results
-    _forwardMovementHits = _movementPatterns.ForwardMovementPattern(creaturePosition, _moveDistance, _spaceSize);
+    _forwardMovementHits = _movementPatterns.ForwardStraightMovementPattern(creaturePosition, _moveDistance, _spaceSize);
 
     MovementPattern(_forwardMovementHits, _forwardXOffset, _forwardZOffset);
 
     // backward ray results
-    _backwardMovementHits = _movementPatterns.BackwardMovementPattern(creaturePosition, _moveDistance, _spaceSize);
+    _backwardMovementHits = _movementPatterns.BackwardStraightMovementPattern(creaturePosition, _moveDistance, _spaceSize);
 
     MovementPattern(_backwardMovementHits, _backwardXOffset, _backwardZOffset);
 
     // left ray results
-    _leftMovementHits = _movementPatterns.LeftMovementPattern(creaturePosition, _moveDistance, _spaceSize);
+    _leftMovementHits = _movementPatterns.LeftStraightMovementPattern(creaturePosition, _moveDistance, _spaceSize);
 
     MovementPattern(_leftMovementHits, _leftXOffset, _leftZOffset);
 
     // right ray results
-    _rightMovementHits = _movementPatterns.RightMovementPattern(creaturePosition, _moveDistance, _spaceSize);
+    _rightMovementHits = _movementPatterns.RightStraightMovementPattern(creaturePosition, _moveDistance, _spaceSize);
 
     MovementPattern(_rightMovementHits, _rightXOffset, _rightZOffset);
+
+
+  }
+
+  void AllDiagonalMovementPatterns(Vector3 creaturePosition)
+  {
+
+    // forward right diagonal ray results
+    _forwardMovementHits = _movementPatterns.ForwardRightDiagonalMovementPattern(creaturePosition, _moveDistance, _spaceSize);
+
+    MovementPattern(_forwardMovementHits, _forwardXOffset, _forwardZOffset);
+
+    // forward left diagonal ray results
+    _leftMovementHits = _movementPatterns.ForwardLeftDiagonalMovementPattern(creaturePosition, _moveDistance, _spaceSize);
+
+    MovementPattern(_leftMovementHits, _leftXOffset, _leftZOffset);
+
+    // backward right diagonal ray results
+    _rightMovementHits = _movementPatterns.BackwardRightDiagonalMovementPattern(creaturePosition, _moveDistance, _spaceSize);
+
+    MovementPattern(_rightMovementHits, _forwardXOffset, _forwardZOffset);
+
+
+    // backward left diagonal ray results
+    _backwardMovementHits = _movementPatterns.BackwardLeftDiagonalMovementPattern(creaturePosition, _moveDistance, _spaceSize);
+
+    MovementPattern(_backwardMovementHits, _forwardXOffset, _forwardZOffset);
 
   }
 
   void SummonAttackSeekers(RaycastHit[] forwardRayHits, RaycastHit[] backwardRayHits, RaycastHit[] leftRayHits, RaycastHit[] rightRayHits, float forwardXOffset, float forwardZOffset, float backwardXOffset, float backwardZOffset, float leftXOffset, float leftZOffset, float rightXOffset, float rightZOffset)
   {
+
 
     if (_stopSummoningAtkSeekers == false)
     {
@@ -510,18 +534,27 @@ public class Creature : MonoBehaviour
 
   void OnTriggerStay(Collider other)
   {
-    // If player, move this creature upwards , then cast 4 rays equal to how far this creature can move (ex. 3 spaces forward, backward, left, right)
-    if (other.CompareTag("Player_1") && (Input.GetKeyDown(KeyCode.Space)))
-    {
-      // Current position START
-      currentPosition = transform.position;
-      oldPosition = currentPosition;
+    // Current position START
+    currentPosition = transform.position;
+    oldPosition = currentPosition;
 
-      _player.setCurrentlySelectedCreature(this.gameObject.GetComponent<Creature>());
+    _player.setCurrentlySelectedCreature(this.gameObject.GetComponent<Creature>());
+
+    // If player, move this creature upwards , then cast 4 rays equal to how far this creature can move (ex. 3 spaces forward, backward, left, right)
+    if (other.CompareTag("Player_1") && (Input.GetKeyDown(KeyCode.Space)) && _moveLine.Equals("Straight"))
+    {
 
       transform.position = new Vector3(transform.position.x, _creatureRiseHeight, transform.position.z);
 
       AllMovementPatterns(transform.position);
+
+      SummonAttackSeekers(_forwardMovementHits, _backwardMovementHits, _leftMovementHits, _rightMovementHits, _forwardXOffset, _forwardZOffset, _backwardXOffset, _backwardZOffset, _leftXOffset, _leftZOffset, _rightXOffset, _rightZOffset);
+    }
+    else if (other.CompareTag("Player_1") && (Input.GetKeyDown(KeyCode.Space)) && _moveLine.Equals("Diagonal"))
+    {
+      transform.position = new Vector3(transform.position.x, _creatureRiseHeight, transform.position.z);
+
+      AllDiagonalMovementPatterns(transform.position);
 
       SummonAttackSeekers(_forwardMovementHits, _backwardMovementHits, _leftMovementHits, _rightMovementHits, _forwardXOffset, _forwardZOffset, _backwardXOffset, _backwardZOffset, _leftXOffset, _leftZOffset, _rightXOffset, _rightZOffset);
     }
@@ -603,12 +636,96 @@ public class Creature : MonoBehaviour
     _isEnemySensedByAttackSeeker = isSensed;
   }
 
+  void FindAndLoadResources()
+  {
+    _board = GameObject.Find("Board").GetComponent<Board>();
+
+    // get the size of each space from the Board component
+    if (_board != null)
+    {
+      _spaceSize = _board.getSpaceSize();
+    }
+
+    _player = GameObject.Find("Player_" + _playerOwner).GetComponent<Player>();
+
+    // get the size of each space from the Board component
+    if (_player == null)
+    {
+      Debug.LogError("Player is null ::Creature.cs::Start()");
+    }
+
+    _gameData = GameObject.Find("Game_Data").GetComponent<GameData>();
+
+    if (_gameData == null)
+    {
+      Debug.LogError("Game Data object is NULL");
+    }
+
+    _movementPatterns = _gameData.GetComponent<MovementPatterns>();
+
+    if (_movementPatterns == null)
+    {
+      Debug.LogError("Movement Patterns script is NULL and should be on Game Data object");
+    }
+
+    _attackPatterns = _gameData.GetComponent<AttackPatterns>();
+
+    if (_attackPatterns == null)
+    {
+      Debug.LogError("Attack Patterns script is NULL and should be on Game Data object");
+    }
+  }
+
   void SaveLocally()
   {
     CreatureToSerialize cts = new CreatureToSerialize(_moveDistance);
 
     _gameData.AddToCreatureDictionary(cts);
   }
+
+
+
+
+
+
+  void CreatureDiagonalPositioning()
+  {
+    if (_isSelected == true)
+    {
+      AllDiagonalMovementPatterns(transform.position);
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 } // End of Creature class
 

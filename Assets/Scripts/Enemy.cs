@@ -24,7 +24,8 @@ public class Enemy : MonoBehaviour
 
       Creature creature = player.getCurrentlySelectedCreature();
 
-      if (creature.getIsEnemySensedByAttackSeeker() == true && Input.GetKeyDown(KeyCode.X))
+
+      if (creature != null && creature.getIsEnemySensedByAttackSeeker() == true && Input.GetKeyDown(KeyCode.X))
       {
         Debug.Log("Attack");
       }
