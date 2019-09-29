@@ -19,6 +19,7 @@ public class Creature : MonoBehaviour
   // When implementing turns, reset all these bools to these default values, so Attack Seekers can respawn with each creature movement pattern
   private bool _stopFalling = false;
   private bool _isSelected, _isDown = false;
+  [SerializeField]
   private bool _summonAtkSeekers, _destroyAtkSeekers = false;
   // helps stops summoning attack seekers when they are actually being summoned. Which means this can stay true once changed to true for the whole game w/o causing errors
   private bool _stopSummoningAtkSeekers = false;
@@ -39,6 +40,13 @@ public class Creature : MonoBehaviour
   private RaycastHit[] _forwardMovementHits;
   private float _forwardXOffset = 0.0f;
   private float _forwardZOffset = 1.0f;
+
+  private float _positiveDiagXOffset = 0.5f;
+  private float _negativeDiagXOffset = -0.5f;
+  private float _allDiagZOffset = 0.0f;
+
+
+
   private RaycastHit[] _forwardAttackHits;
   private float _forwardXAtkOffset = 0.0f;
   private float _forwardZAtkOffset = 0.5f;
@@ -66,7 +74,7 @@ public class Creature : MonoBehaviour
   // number of spaces this creature can move
   private float _moveDistance = 3.0f;
   private float _attackDistance = 2.0f;
-  private string _moveLine = "Straight";
+  private string _moveLine = "Diagonal";
   private string _attackLine = "Straight";
 
   // Start is called before the first frame update
@@ -82,16 +90,7 @@ public class Creature : MonoBehaviour
   // Update is called once per frame
   void Update()
   {
-
-
-    Debug.DrawRay(transform.position, new Vector3(-1, 0, -1) * _moveDistance * _spaceSize, Color.red);
-
-
-
-    if (_spaceSize <= 0.0f)
-    {
-      Debug.LogError("Cannot get space size, Ray will not be casted");
-    }
+    CreatureState();
 
     switch (_moveLine)
     {
@@ -120,14 +119,18 @@ public class Creature : MonoBehaviour
 
   }
 
-  // Defines the creature's position (for straight line movement) currently and where it can move if possible
-  void CreatureStraightPositioning()
+  private void CreatureState()
   {
+    if (_spaceSize <= 0.0f)
+    {
+      Debug.LogError("Cannot get space size, Ray will not be casted");
+    }
+
+
     if (_stopFalling == false)
     {
       transform.Translate(Vector3.down * Time.deltaTime);
     }
-
     // We know if the creature is selected if it is not on the ground (if the y value is above a certain number)
     // RAISE & NOT MOVED
     if (transform.position.y >= 3 && currentPosition == oldPosition)
@@ -165,19 +168,18 @@ public class Creature : MonoBehaviour
       ClearBoardColor();
     }
 
-    if (_isSelected == true)
-    {
-      // make this false so we know the creature is not down right now (We turned this true in the CreatureIndivMovementPattern() right after this, so if _isDown is changed to false after that method call, the HideMovementPattern() won't be called b/c _isDown must be true to enter it's if statement)
-      CreatureIndivMovementPattern();
 
-      // When I implement a turn system, we will search for the the current player by searching for the tag so we know who can press keys. We dont want Player 2 to press keys during Player 1's turn. We will use the tag to set _whoseTurnIsIt. Then we will exclude all other players except the one with the tag equal to _whoseTurnIsIt
-      // When it is player 1's turn, at anytime the creature is in the air and regardless of the player's position, if they press the B key, the creature will be placed down
-      if (_whoseTurnIsIt.Equals("Player_1") && _isSelected == true && Input.GetKeyDown(KeyCode.B))
-      {
-        transform.position = new Vector3(transform.position.x, _creatureGroundY, transform.position.z);
-      }
+
+    // When I implement a turn system, we will search for the the current player by searching for the tag so we know who can press keys. We dont want Player 2 to press keys during Player 1's turn. We will use the tag to set _whoseTurnIsIt. Then we will exclude all other players except the one with the tag equal to _whoseTurnIsIt
+    // When it is player 1's turn, at anytime the creature is in the air and regardless of the player's position, if they press the B key, the creature will be placed down
+    if (_whoseTurnIsIt.Equals("Player_1") && _isSelected == true && Input.GetKeyDown(KeyCode.B))
+    {
+      transform.position = new Vector3(transform.position.x, _creatureGroundY, transform.position.z);
     }
-    else if (_isSelected == false && _isDown == true && _forwardMovementHits != null && _backwardMovementHits != null && _leftMovementHits != null && _rightMovementHits != null)
+
+
+
+    if (_isSelected == false && _isDown == true && _forwardMovementHits != null && _backwardMovementHits != null && _leftMovementHits != null && _rightMovementHits != null)
     {
       HideAllMovementPatterns();
     }
@@ -186,6 +188,27 @@ public class Creature : MonoBehaviour
       // Do nothing since this is called when the game just starts and all the RaycastHit arrays are null
     }
   }
+
+  // Defines the creature's position (for straight line movement) currently and where it can move if possible
+  void CreatureStraightPositioning()
+  {
+
+    if (_isSelected == true)
+    {
+      // make this false so we know the creature is not down right now (We turned this true in the CreatureIndivMovementPattern() right after this, so if _isDown is changed to false after that method call, the HideMovementPattern() won't be called b/c _isDown must be true to enter it's if statement)
+      CreatureIndivMovementPattern();
+
+
+    }
+
+  }
+
+
+
+
+
+
+
 
   // determines where the creature can attack (in a straight line only)
   public void CreatureStraightAttack()
@@ -253,6 +276,7 @@ public class Creature : MonoBehaviour
         // we Round the only the Z float and then add 1 to fix the ray's calculating error. This only affects the Z and NOT the X
         float currentHitZ = Mathf.Round(currentHit.point.z) + zOffset;
 
+
         if (playerPositionX == currentHitX && playerPositionZ == currentHitZ)
         {
           Vector3 newLocation = new Vector3(currentHitX, _creatureGroundY, currentHitZ);
@@ -318,27 +342,26 @@ public class Creature : MonoBehaviour
 
   void AllDiagonalMovementPatterns(Vector3 creaturePosition)
   {
-
     // forward right diagonal ray results
     _forwardMovementHits = _movementPatterns.ForwardRightDiagonalMovementPattern(creaturePosition, _moveDistance, _spaceSize);
 
-    MovementPattern(_forwardMovementHits, _forwardXOffset, _forwardZOffset);
+    MovementPattern(_forwardMovementHits, _positiveDiagXOffset, _allDiagZOffset);
 
     // forward left diagonal ray results
     _leftMovementHits = _movementPatterns.ForwardLeftDiagonalMovementPattern(creaturePosition, _moveDistance, _spaceSize);
 
-    MovementPattern(_leftMovementHits, _leftXOffset, _leftZOffset);
+    MovementPattern(_leftMovementHits, _negativeDiagXOffset, _allDiagZOffset);
 
     // backward right diagonal ray results
     _rightMovementHits = _movementPatterns.BackwardRightDiagonalMovementPattern(creaturePosition, _moveDistance, _spaceSize);
 
-    MovementPattern(_rightMovementHits, _forwardXOffset, _forwardZOffset);
+    MovementPattern(_rightMovementHits, _positiveDiagXOffset, _allDiagZOffset);
 
 
     // backward left diagonal ray results
     _backwardMovementHits = _movementPatterns.BackwardLeftDiagonalMovementPattern(creaturePosition, _moveDistance, _spaceSize);
 
-    MovementPattern(_backwardMovementHits, _forwardXOffset, _forwardZOffset);
+    MovementPattern(_backwardMovementHits, _negativeDiagXOffset, _allDiagZOffset);
 
   }
 
@@ -356,6 +379,7 @@ public class Creature : MonoBehaviour
         Vector3 currentLocation = forwardRayHits[i].point;
 
         float currentHitX = currentHit.point.x + forwardXOffset;
+
         float currentHitZ = Mathf.Round(currentLocation.z) + forwardZOffset;
 
         Vector3 updatedLocation = new Vector3(currentHitX, currentLocation.y + 3.0f, currentHitZ);
@@ -474,7 +498,6 @@ public class Creature : MonoBehaviour
 
     foreach (RaycastHit r in hits)
     {
-      // allRayHits.Add (r);
       if (r.transform.gameObject.CompareTag("Enemy"))
       {
         allRayHits.Add(r);
@@ -550,7 +573,7 @@ public class Creature : MonoBehaviour
 
       SummonAttackSeekers(_forwardMovementHits, _backwardMovementHits, _leftMovementHits, _rightMovementHits, _forwardXOffset, _forwardZOffset, _backwardXOffset, _backwardZOffset, _leftXOffset, _leftZOffset, _rightXOffset, _rightZOffset);
     }
-    else if (other.CompareTag("Player_1") && (Input.GetKeyDown(KeyCode.Space)) && _moveLine.Equals("Diagonal"))
+    if (other.CompareTag("Player_1") && (Input.GetKeyDown(KeyCode.Space)) && _moveLine.Equals("Diagonal"))
     {
       transform.position = new Vector3(transform.position.x, _creatureRiseHeight, transform.position.z);
 
