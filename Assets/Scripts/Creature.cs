@@ -38,30 +38,15 @@ public class Creature : MonoBehaviour
   // everywhere this creature can move
   [SerializeField]
   private RaycastHit[] _forwardMovementHits;
-  private float _forwardXOffset = 0.0f;
-  private float _forwardZOffset = 1.0f;
-
-  private float _positiveDiagXOffset = 0.5f;
-  private float _negativeDiagXOffset = -0.5f;
-  private float _allDiagZOffset = 0.0f;
-
 
 
   private RaycastHit[] _forwardAttackHits;
-  private float _forwardXAtkOffset = 0.0f;
-  private float _forwardZAtkOffset = 0.5f;
 
   private RaycastHit[] _backwardMovementHits;
-  private float _backwardZOffset = -1.0f;
-  private float _backwardXOffset = 0.0f;
 
   private RaycastHit[] _leftMovementHits;
-  private float _leftXOffset = -0.5f;
-  private float _leftZOffset = 0.0f;
 
   private RaycastHit[] _rightMovementHits;
-  private float _rightXOffset = 0.5f;
-  private float _rightZOffset = 0.0f;
 
   private List<RaycastHit> allRayHits = new List<RaycastHit>();
 
@@ -260,7 +245,7 @@ public class Creature : MonoBehaviour
 
 
 
-  void MovementPattern(RaycastHit[] movementHitPoints, float xOffset, float zOffset)
+  void MovementPattern(RaycastHit[] movementHitPoints)
   {
     float playerPositionX = _player.transform.position.x;
     float playerPositionZ = _player.transform.position.z;
@@ -271,11 +256,8 @@ public class Creature : MonoBehaviour
       {
         RaycastHit currentHit = movementHitPoints[i];
 
-        float currentHitX = currentHit.point.x + xOffset;
-
-        // we Round the only the Z float and then add 1 to fix the ray's calculating error. This only affects the Z and NOT the X
-        float currentHitZ = Mathf.Round(currentHit.point.z) + zOffset;
-
+        float currentHitX = RoundPositionFloat(currentHit.point.x, _spaceSize);
+        float currentHitZ = RoundPositionFloat(currentHit.point.z, _spaceSize);
 
         if (playerPositionX == currentHitX && playerPositionZ == currentHitZ)
         {
@@ -320,22 +302,22 @@ public class Creature : MonoBehaviour
     // forward ray results
     _forwardMovementHits = _movementPatterns.ForwardStraightMovementPattern(creaturePosition, _moveDistance, _spaceSize);
 
-    MovementPattern(_forwardMovementHits, _forwardXOffset, _forwardZOffset);
+    MovementPattern(_forwardMovementHits);
 
     // backward ray results
     _backwardMovementHits = _movementPatterns.BackwardStraightMovementPattern(creaturePosition, _moveDistance, _spaceSize);
 
-    MovementPattern(_backwardMovementHits, _backwardXOffset, _backwardZOffset);
+    MovementPattern(_backwardMovementHits);
 
     // left ray results
     _leftMovementHits = _movementPatterns.LeftStraightMovementPattern(creaturePosition, _moveDistance, _spaceSize);
 
-    MovementPattern(_leftMovementHits, _leftXOffset, _leftZOffset);
+    MovementPattern(_leftMovementHits);
 
     // right ray results
     _rightMovementHits = _movementPatterns.RightStraightMovementPattern(creaturePosition, _moveDistance, _spaceSize);
 
-    MovementPattern(_rightMovementHits, _rightXOffset, _rightZOffset);
+    MovementPattern(_rightMovementHits);
 
 
   }
@@ -345,29 +327,28 @@ public class Creature : MonoBehaviour
     // forward right diagonal ray results
     _forwardMovementHits = _movementPatterns.ForwardRightDiagonalMovementPattern(creaturePosition, _moveDistance, _spaceSize);
 
-    MovementPattern(_forwardMovementHits, _positiveDiagXOffset, _allDiagZOffset);
+    MovementPattern(_forwardMovementHits);
 
     // forward left diagonal ray results
     _leftMovementHits = _movementPatterns.ForwardLeftDiagonalMovementPattern(creaturePosition, _moveDistance, _spaceSize);
 
-    MovementPattern(_leftMovementHits, _negativeDiagXOffset, _allDiagZOffset);
+    MovementPattern(_leftMovementHits);
 
     // backward right diagonal ray results
     _rightMovementHits = _movementPatterns.BackwardRightDiagonalMovementPattern(creaturePosition, _moveDistance, _spaceSize);
 
-    MovementPattern(_rightMovementHits, _positiveDiagXOffset, _allDiagZOffset);
+    MovementPattern(_rightMovementHits);
 
 
     // backward left diagonal ray results
     _backwardMovementHits = _movementPatterns.BackwardLeftDiagonalMovementPattern(creaturePosition, _moveDistance, _spaceSize);
 
-    MovementPattern(_backwardMovementHits, _negativeDiagXOffset, _allDiagZOffset);
+    MovementPattern(_backwardMovementHits);
 
   }
 
-  void SummonAttackSeekers(RaycastHit[] forwardRayHits, RaycastHit[] backwardRayHits, RaycastHit[] leftRayHits, RaycastHit[] rightRayHits, float forwardXOffset, float forwardZOffset, float backwardXOffset, float backwardZOffset, float leftXOffset, float leftZOffset, float rightXOffset, float rightZOffset)
+  void SummonAttackSeekers(RaycastHit[] forwardRayHits, RaycastHit[] backwardRayHits, RaycastHit[] leftRayHits, RaycastHit[] rightRayHits)
   {
-
 
     if (_stopSummoningAtkSeekers == false)
     {
@@ -378,9 +359,9 @@ public class Creature : MonoBehaviour
 
         Vector3 currentLocation = forwardRayHits[i].point;
 
-        float currentHitX = currentHit.point.x + forwardXOffset;
+        float currentHitX = RoundPositionFloat(currentLocation.x, _spaceSize);
 
-        float currentHitZ = Mathf.Round(currentLocation.z) + forwardZOffset;
+        float currentHitZ = RoundPositionFloat(currentLocation.z, _spaceSize);
 
         Vector3 updatedLocation = new Vector3(currentHitX, currentLocation.y + 3.0f, currentHitZ);
 
@@ -400,8 +381,9 @@ public class Creature : MonoBehaviour
 
           Vector3 currentLocation = backwardRayHits[i].point;
 
-          float currentHitX = currentHit.point.x + backwardXOffset;
-          float currentHitZ = Mathf.Round(currentLocation.z) + backwardZOffset;
+          float currentHitX = RoundPositionFloat(currentLocation.x, _spaceSize);
+
+          float currentHitZ = RoundPositionFloat(currentLocation.z, _spaceSize);
 
           Vector3 updatedLocation = new Vector3(currentHitX, currentLocation.y + 3.0f, currentHitZ);
 
@@ -422,8 +404,9 @@ public class Creature : MonoBehaviour
 
           Vector3 currentLocation = leftRayHits[i].point;
 
-          float currentHitX = currentHit.point.x + leftXOffset;
-          float currentHitZ = Mathf.Round(currentLocation.z) + leftZOffset;
+          float currentHitX = RoundPositionFloat(currentLocation.x, _spaceSize);
+
+          float currentHitZ = RoundPositionFloat(currentLocation.z, _spaceSize);
 
           Vector3 updatedLocation = new Vector3(currentHitX, currentLocation.y + 3.0f, currentHitZ);
 
@@ -444,8 +427,9 @@ public class Creature : MonoBehaviour
 
           Vector3 currentLocation = rightRayHits[i].point;
 
-          float currentHitX = currentHit.point.x + rightXOffset;
-          float currentHitZ = Mathf.Round(currentLocation.z) + rightZOffset;
+          float currentHitX = RoundPositionFloat(currentLocation.x, _spaceSize);
+
+          float currentHitZ = RoundPositionFloat(currentLocation.z, _spaceSize);
 
           Vector3 updatedLocation = new Vector3(currentHitX, currentLocation.y + 3.0f, currentHitZ);
 
@@ -571,7 +555,7 @@ public class Creature : MonoBehaviour
 
       AllMovementPatterns(transform.position);
 
-      SummonAttackSeekers(_forwardMovementHits, _backwardMovementHits, _leftMovementHits, _rightMovementHits, _forwardXOffset, _forwardZOffset, _backwardXOffset, _backwardZOffset, _leftXOffset, _leftZOffset, _rightXOffset, _rightZOffset);
+      SummonAttackSeekers(_forwardMovementHits, _backwardMovementHits, _leftMovementHits, _rightMovementHits);
     }
     if (other.CompareTag("Player_1") && (Input.GetKeyDown(KeyCode.Space)) && _moveLine.Equals("Diagonal"))
     {
@@ -579,7 +563,7 @@ public class Creature : MonoBehaviour
 
       AllDiagonalMovementPatterns(transform.position);
 
-      SummonAttackSeekers(_forwardMovementHits, _backwardMovementHits, _leftMovementHits, _rightMovementHits, _forwardXOffset, _forwardZOffset, _backwardXOffset, _backwardZOffset, _leftXOffset, _leftZOffset, _rightXOffset, _rightZOffset);
+      SummonAttackSeekers(_forwardMovementHits, _backwardMovementHits, _leftMovementHits, _rightMovementHits);
     }
 
     // If the B key is pressed, put the creature back down where it was
@@ -707,8 +691,22 @@ public class Creature : MonoBehaviour
   }
 
 
+  // Rounds float to the nearest whole number divisible by 4
+  float RoundPositionFloat(float floatToRound, float nearestFloatToRoundTo)
+  {
+    floatToRound = Mathf.Round(floatToRound);
 
+    if (floatToRound % nearestFloatToRoundTo != 0.0f)
+    {
+      floatToRound += 1.0f;
+      if (floatToRound % nearestFloatToRoundTo != 0.0f)
+      {
+        floatToRound -= 2.0f;
+      }
+    }
 
+    return floatToRound;
+  }
 
 
   void CreatureDiagonalPositioning()

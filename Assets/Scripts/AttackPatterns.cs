@@ -7,7 +7,7 @@ public class AttackPatterns : MonoBehaviour
   private GameData _gameData;
   private Renderer _renderer;
   private int layerMask = 9;
-  // private Color _spaceSelectedColor = new Color(0.2F, 0.3F, 0.4F);
+
   private Color _spaceSelectedColor = Color.green;
 
   private Color _spaceDeSelectedColor = Color.white;
@@ -36,13 +36,15 @@ public class AttackPatterns : MonoBehaviour
   {
     Vector3 pos = position;
 
+    // pos = new Vector3(pos.x + 0.5f, pos.y, pos.z - 1.0f);
+
     Vector3 rayDirection = transform.TransformDirection(direction);
 
     float rayDistance = maxDistance * spaceSize;
 
     RaycastHit[] hits = Physics.RaycastAll(pos, rayDirection, rayDistance, layerMask);
 
-    Debug.DrawRay(pos, rayDirection * rayDistance, Color.red);
+    // Debug.DrawRay(pos, rayDirection * rayDistance, Color.red);
 
     ShowAtkPattern(hits);
 
