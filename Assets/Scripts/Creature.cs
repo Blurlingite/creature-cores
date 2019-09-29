@@ -18,6 +18,7 @@ public class Creature : MonoBehaviour
   private string _whoseTurnIsIt = "Player_1";
   // When implementing turns, reset all these bools to these default values, so Attack Seekers can respawn with each creature movement pattern
   private bool _stopFalling = false;
+  [SerializeField]
   private bool _isSelected, _isDown = false;
   [SerializeField]
   private bool _summonAtkSeekers, _destroyAtkSeekers = false;
@@ -27,6 +28,7 @@ public class Creature : MonoBehaviour
   private bool _wasEnemyHitByRay = false;
   [SerializeField]
   private bool _isNewLocation = false;
+  [SerializeField]
   private bool _isEnemySensedByAttackSeeker = false;
   private float _creatureRiseHeight = 3.0f;
   // The Y position the creature needs to be to be on the ground
@@ -48,7 +50,7 @@ public class Creature : MonoBehaviour
 
   private RaycastHit[] _rightMovementHits;
 
-  private List<RaycastHit> allRayHits = new List<RaycastHit>();
+  private List<RaycastHit> allEnemyHits = new List<RaycastHit>();
 
 
   // All variables that will be saved to the file go here:
@@ -75,6 +77,12 @@ public class Creature : MonoBehaviour
   // Update is called once per frame
   void Update()
   {
+
+    // while the creature is down, keep the spaces on the board to their normal color
+    if (_isSelected == false && _isDown == true)
+    {
+      ClearBoardColor();
+    }
     CreatureState();
 
     switch (_moveLine)
@@ -216,11 +224,17 @@ public class Creature : MonoBehaviour
 
       if (_isNewLocation == true)
       {
-        allRayHits.Clear();
+        // empty list to clear old results from last raycast
+        allEnemyHits.Clear();
+        ClearBoardColor();
+        if (_forwardAttackHits != null)
+        {
+          Debug.Log(_forwardAttackHits.Length);
 
+        }
         CreatureAttackRays();
 
-        if (allRayHits.Count == 0)
+        if (allEnemyHits.Count == 0)
         {
           _isEnemySensedByAttackSeeker = false;
         }
@@ -450,13 +464,18 @@ public class Creature : MonoBehaviour
 
     foreach (Renderer r in allSpaceRenderers)
     {
-      MaterialPropertyBlock _propBlock = new MaterialPropertyBlock();
+      // We don't want to color the center cubes so exclude any gameobjects with that tag
+      if (!r.gameObject.CompareTag("Center_Cube"))
+      {
+        MaterialPropertyBlock _propBlock = new MaterialPropertyBlock();
 
-      r.GetPropertyBlock(_propBlock);
-      // Assign our new value.
-      _propBlock.SetColor("_Color", Color.white);
-      // Apply the edited values to the renderer.
-      r.SetPropertyBlock(_propBlock);
+        r.GetPropertyBlock(_propBlock);
+        // Assign our new value.
+        _propBlock.SetColor("_Color", Color.white);
+        // Apply the edited values to the renderer.
+        r.SetPropertyBlock(_propBlock);
+      }
+
     }
   }
 
@@ -484,7 +503,7 @@ public class Creature : MonoBehaviour
     {
       if (r.transform.gameObject.CompareTag("Enemy"))
       {
-        allRayHits.Add(r);
+        allEnemyHits.Add(r);
         // needs to be true so the path leading to the enemy is colored in gray with SpaceColorer()
         _wasEnemyHitByRay = true;
         // notify attack seeker so we can attack by pressing a certain key
@@ -513,21 +532,52 @@ public class Creature : MonoBehaviour
 
   public void SpaceColorer(RaycastHit[] hits, bool isEnemyHit)
   {
+    float enemyXFloat = 0.0f;
+    float enemyZFloat = 0.0f;
+
+    float spaceXFloat = 0.0f;
+    float spaceZFloat = 0.0f;
 
     if (isEnemyHit == true)
     {
-      // Color each space that was hit with attack color
-      foreach (RaycastHit rch in hits)
+      // Go through each enemy object that was hit, round their positions and then round & compare the positions of each of the space's hit with those positions and if it's a match, color that square gray
+      foreach (RaycastHit enemy in allEnemyHits)
       {
-        try
+        enemyXFloat = RoundPositionFloat(enemy.point.x, _spaceSize);
+        enemyZFloat = RoundPositionFloat(enemy.point.z, _spaceSize);
+
+
+        foreach (RaycastHit space in hits)
         {
-          Renderer parentSpace = rch.transform.parent.GetComponent<Renderer>();
-          _attackPatterns.SpaceColorSwitcher(parentSpace, Color.gray);
-        }
-        catch (NullReferenceException e)
-        {
-          // just doing this so the error goes away
-          e.ToString();
+          spaceXFloat = RoundPositionFloat(space.point.x, _spaceSize);
+          spaceZFloat = RoundPositionFloat(space.point.z, _spaceSize);
+
+          if (enemyXFloat == spaceXFloat && enemyZFloat == spaceZFloat)
+          {
+            try
+            {
+              Renderer parentSpace = space.transform.parent.GetComponent<Renderer>();
+              _attackPatterns.SpaceColorSwitcher(parentSpace, Color.gray);
+            }
+            catch (NullReferenceException e)
+            {
+              // just doing this so the error goes away
+              e.ToString();
+            }
+          }
+          else
+          {
+            try
+            {
+              Renderer parentSpace = space.transform.parent.GetComponent<Renderer>();
+              _attackPatterns.SpaceColorSwitcher(parentSpace, Color.white);
+            }
+            catch (NullReferenceException e)
+            {
+              // just doing this so the error goes away
+              e.ToString();
+            }
+          }
         }
       }
     }

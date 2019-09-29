@@ -44,8 +44,6 @@ public class AttackPatterns : MonoBehaviour
 
     RaycastHit[] hits = Physics.RaycastAll(pos, rayDirection, rayDistance, layerMask);
 
-    // Debug.DrawRay(pos, rayDirection * rayDistance, Color.red);
-
     ShowAtkPattern(hits);
 
     for (int i = 0; i < hits.Length; i++)
