@@ -36,25 +36,86 @@ public class AttackPatterns : MonoBehaviour
   {
     Vector3 pos = position;
 
-    // pos = new Vector3(pos.x + 0.5f, pos.y, pos.z - 1.0f);
-
     Vector3 rayDirection = transform.TransformDirection(direction);
 
     float rayDistance = maxDistance * spaceSize;
 
-    RaycastHit[] hits = Physics.RaycastAll(pos, rayDirection, rayDistance, layerMask);
+    RaycastHit[] rayResults = Physics.RaycastAll(pos, rayDirection, rayDistance, layerMask);
 
-    List<RaycastHit> listHits = new List<RaycastHit>();
+    RaycastHit temp;
 
-    foreach (RaycastHit r in hits)
+    List<RaycastHit> sortedHits = new List<RaycastHit>();
+
+    List<RaycastHit> moveableSpaces = new List<RaycastHit>();
+
+    bool isEnemyHitPresent = false;
+
+
+    // sort the array from least distance to greatest distance away from the ray
+    for (int i = 0; i < rayResults.Length; i++)
     {
-      listHits.Add(r);
+      if (rayResults[i].transform.CompareTag("Enemy"))
+      {
+        isEnemyHitPresent = true;
+
+      }
+      for (int j = i; j > 0; j--)
+      {
+        if (rayResults[j].distance < rayResults[j - 1].distance)
+        {
+          temp = rayResults[j];
+          rayResults[j] = rayResults[j - 1];
+          rayResults[j - 1] = temp;
+        }
+      }
     }
 
-    ShowAtkPattern(listHits);
+    // if at least one enemy hit is in the array, filter out the hits that appear after the enemy hit, else add everything in the array to the list
+    if (isEnemyHitPresent == true)
+    {
+
+      float enemyDistance = 0.0f;
+
+      for (int i = 0; i < rayResults.Length; i++)
+      {
+        if (rayResults[i].transform.CompareTag("Enemy"))
+        {
+
+          enemyDistance = rayResults[i].distance;
+          moveableSpaces.Add(rayResults[i]);
+          break;
+        }
+
+      }
 
 
-    return listHits;
+      for (int i = 0; i < rayResults.Length; i++)
+      {
+
+        float hitDistance = rayResults[i].distance;
+
+        if (hitDistance < (enemyDistance + spaceSize / 4))
+        {
+          moveableSpaces.Add(rayResults[i]);
+
+        }
+      }
+
+
+    }
+    else
+    {
+      foreach (RaycastHit r in rayResults)
+      {
+        moveableSpaces.Add(r);
+      }
+    }
+
+
+    ShowAtkPattern(moveableSpaces);
+
+
+    return moveableSpaces;
 
   }
 
