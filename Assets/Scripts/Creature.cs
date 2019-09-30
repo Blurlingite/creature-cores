@@ -40,7 +40,6 @@ public class Creature : MonoBehaviour
   // everywhere this creature can move
   [SerializeField]
   private List<RaycastHit> _forwardMovementHits;
-
   private RaycastHit[] _forwardAttackHits;
 
   private List<RaycastHit> _backwardMovementHits;
@@ -60,7 +59,7 @@ public class Creature : MonoBehaviour
   // number of spaces this creature can move
   private float _moveDistance = 3.0f;
   private float _attackDistance = 2.0f;
-  private string _moveLine = "Straight";
+  private string _moveLine = "Diagonal";
   private string _attackLine = "Straight";
 
   // Start is called before the first frame update
@@ -337,25 +336,25 @@ public class Creature : MonoBehaviour
   void AllDiagonalMovementPatterns(Vector3 creaturePosition)
   {
     // forward right diagonal ray results
-    // _forwardMovementHits = _movementPatterns.ForwardRightDiagonalMovementPattern(creaturePosition, _moveDistance, _spaceSize);
+    _forwardMovementHits = _movementPatterns.DiagonalMovementPattern(creaturePosition, new Vector3(1, 0, 1), _moveDistance, _spaceSize);
 
-    // MovementPattern(_forwardMovementHits);
+    MovementPattern(_forwardMovementHits);
 
     // forward left diagonal ray results
-    // _leftMovementHits = _movementPatterns.ForwardLeftDiagonalMovementPattern(creaturePosition, _moveDistance, _spaceSize);
+    _leftMovementHits = _movementPatterns.DiagonalMovementPattern(creaturePosition, new Vector3(-1, 0, 1), _moveDistance, _spaceSize);
 
-    // MovementPattern(_leftMovementHits);
+    MovementPattern(_leftMovementHits);
 
     // backward right diagonal ray results
-    // _rightMovementHits = _movementPatterns.BackwardRightDiagonalMovementPattern(creaturePosition, _moveDistance, _spaceSize);
+    _rightMovementHits = _movementPatterns.DiagonalMovementPattern(creaturePosition, new Vector3(1, 0, -1), _moveDistance, _spaceSize);
 
-    // MovementPattern(_rightMovementHits);
+    MovementPattern(_rightMovementHits);
 
 
     // backward left diagonal ray results
-    // _backwardMovementHits = _movementPatterns.BackwardLeftDiagonalMovementPattern(creaturePosition, _moveDistance, _spaceSize);
+    _backwardMovementHits = _movementPatterns.DiagonalMovementPattern(creaturePosition, new Vector3(-1, 0, -1), _moveDistance, _spaceSize);
 
-    // MovementPattern(_backwardMovementHits);
+    MovementPattern(_backwardMovementHits);
 
   }
   void SummonAttackSeekers(List<RaycastHit> forwardRayHits, List<RaycastHit> backwardRayHits, List<RaycastHit> leftRayHits, List<RaycastHit> rightRayHits)

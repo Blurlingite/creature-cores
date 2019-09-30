@@ -13,10 +13,6 @@ public class MovementPatterns : MonoBehaviour
   // used to ignore colliders on a certain layer (layer 9 in this case b/c we set it to 9) when casting rays so I don't get unintended hits in the hit arrays and then errors. 
   // The Player is on layer 9 b/c it's collider was getting in the way
   private int layerMask = 9;
-  private RaycastHit[] _forwardHits;
-  private RaycastHit[] _backwardHits;
-  private RaycastHit[] _leftHits;
-  private RaycastHit[] _rightHits;
 
   // Extra distance needed for diagonal space calculations
   private float _diagonalOffset;
@@ -47,7 +43,7 @@ public class MovementPatterns : MonoBehaviour
     Ray ray = new Ray(creaturePosition, rayDirection);
 
     // RayCastAll() will let you get info from each collider the ray passes through (each one the ray hits)
-    _forwardHits = Physics.RaycastAll(ray.origin, ray.direction, rayDistance, layerMask);
+    RaycastHit[] rayResults = Physics.RaycastAll(ray.origin, ray.direction, rayDistance, layerMask);
 
     RaycastHit temp;
 
@@ -57,26 +53,26 @@ public class MovementPatterns : MonoBehaviour
 
 
     // sort the array from least distance to greatest distance away from the ray
-    for (int i = 0; i < _forwardHits.Length; i++)
+    for (int i = 0; i < rayResults.Length; i++)
     {
       for (int j = i; j > 0; j--)
       {
-        if (_forwardHits[j].distance < _forwardHits[j - 1].distance)
+        if (rayResults[j].distance < rayResults[j - 1].distance)
         {
-          temp = _forwardHits[j];
-          _forwardHits[j] = _forwardHits[j - 1];
-          _forwardHits[j - 1] = temp;
+          temp = rayResults[j];
+          rayResults[j] = rayResults[j - 1];
+          rayResults[j - 1] = temp;
         }
       }
     }
 
-    for (int i = 0; i < _forwardHits.Length; i++)
+    for (int i = 0; i < rayResults.Length; i++)
     {
-      if (!_forwardHits[i].transform.CompareTag("Enemy"))
+      if (!rayResults[i].transform.CompareTag("Enemy"))
       {
-        moveableSpaces.Add(_forwardHits[i]);
+        moveableSpaces.Add(rayResults[i]);
       }
-      else if (_forwardHits[i].transform.CompareTag("Enemy"))
+      else if (rayResults[i].transform.CompareTag("Enemy"))
       {
         break;
       }
@@ -90,10 +86,8 @@ public class MovementPatterns : MonoBehaviour
 
 
 
-
-
   // fires a ray forward (right diagonal line) and returns what it hits in a RayCastHit array. All spaces that are hit also change color
-  public RaycastHit[] ForwardRightDiagonalMovementPattern(Vector3 creaturePosition, float creatureSpaceMoveDistance, float spaceSize)
+  public List<RaycastHit> DiagonalMovementPattern(Vector3 creaturePosition, Vector3 direction, float creatureSpaceMoveDistance, float spaceSize)
   {
 
     // Shooting diagonally, we need extra distance equal to half the size of 1 space, which is 2.0f in this case since a space is 4x4
@@ -103,98 +97,52 @@ public class MovementPatterns : MonoBehaviour
 
     float rayDistance = creatureSpaceMoveDistance * spaceSize;
 
-    Vector3 rayDirection = transform.TransformDirection(new Vector3(1, 0, 1));
+    Vector3 rayDirection = transform.TransformDirection(direction);
 
     Ray ray = new Ray(creaturePosition, rayDirection);
 
     // RayCastAll() will let you get info from each collider the ray passes through (each one the ray hits)
-    _forwardHits = Physics.RaycastAll(ray.origin, ray.direction, rayDistance, layerMask);
-
-    ShowMovementPattern(_forwardHits);
-
-    // return the hits you got from where the ray was fired (from the creature's (that accesses this script) position)
-    return _forwardHits;
-  }
+    RaycastHit[] rayResults = Physics.RaycastAll(ray.origin, ray.direction, rayDistance, layerMask);
 
 
+    RaycastHit temp;
+
+    List<RaycastHit> sortedHits = new List<RaycastHit>();
+
+    List<RaycastHit> moveableSpaces = new List<RaycastHit>();
 
 
-  public RaycastHit[] ForwardLeftDiagonalMovementPattern(Vector3 creaturePosition, float creatureSpaceMoveDistance, float spaceSize)
-  {
-    // Shooting diagonally, we need extra distance equal to half the size of 1 space, which is 2.0f in this case since a space is 4x4
-    _diagonalOffset = spaceSize / 2;
+    // sort the array from least distance to greatest distance away from the ray
+    for (int i = 0; i < rayResults.Length; i++)
+    {
+      for (int j = i; j > 0; j--)
+      {
+        if (rayResults[j].distance < rayResults[j - 1].distance)
+        {
+          temp = rayResults[j];
+          rayResults[j] = rayResults[j - 1];
+          rayResults[j - 1] = temp;
+        }
+      }
+    }
 
-    spaceSize += _diagonalOffset;
+    for (int i = 0; i < rayResults.Length; i++)
+    {
+      if (!rayResults[i].transform.CompareTag("Enemy"))
+      {
+        moveableSpaces.Add(rayResults[i]);
+      }
+      else if (rayResults[i].transform.CompareTag("Enemy"))
+      {
+        break;
+      }
+    }
 
-    float rayDistance = creatureSpaceMoveDistance * spaceSize;
-
-    Vector3 rayDirection = transform.TransformDirection(new Vector3(-1, 0, 1));
-
-    Ray ray = new Ray(creaturePosition, rayDirection);
-
-    // RayCastAll() will let you get info from each collider the ray passes through (each one the ray hits)
-    _leftHits = Physics.RaycastAll(ray.origin, ray.direction, rayDistance, layerMask);
-
-
-    ShowMovementPattern(_leftHits);
-
-    // return the hits you got from where the ray was fired (from the creature's (that accesses this script) position)
-    return _leftHits;
-  }
-
-
-  public RaycastHit[] BackwardRightDiagonalMovementPattern(Vector3 creaturePosition, float creatureSpaceMoveDistance, float spaceSize)
-  {
-    // Shooting diagonally, we need extra distance equal to half the size of 1 space, which is 2.0f in this case since a space is 4x4
-    _diagonalOffset = spaceSize / 2;
-
-    spaceSize += _diagonalOffset;
-
-    float rayDistance = creatureSpaceMoveDistance * spaceSize;
-
-    Vector3 rayDirection = transform.TransformDirection(new Vector3(1, 0, -1));
-
-    Ray ray = new Ray(creaturePosition, rayDirection);
-
-    // RayCastAll() will let you get info from each collider the ray passes through (each one the ray hits)
-    _rightHits = Physics.RaycastAll(ray.origin, ray.direction, rayDistance, layerMask);
-
-    ShowMovementPattern(_rightHits);
+    ShowMovementPattern(moveableSpaces);
 
     // return the hits you got from where the ray was fired (from the creature's (that accesses this script) position)
-    return _rightHits;
+    return moveableSpaces;
   }
-
-
-
-  public RaycastHit[] BackwardLeftDiagonalMovementPattern(Vector3 creaturePosition, float creatureSpaceMoveDistance, float spaceSize)
-  {
-    // Shooting diagonally, we need extra distance equal to half the size of 1 space, which is 2.0f in this case since a space is 4x4
-    _diagonalOffset = spaceSize / 2;
-
-    spaceSize += _diagonalOffset;
-
-    float rayDistance = creatureSpaceMoveDistance * spaceSize;
-
-    Vector3 rayDirection = transform.TransformDirection(new Vector3(-1, 0, -1));
-
-    Ray ray = new Ray(creaturePosition, rayDirection);
-
-    // RayCastAll() will let you get info from each collider the ray passes through (each one the ray hits)
-    _backwardHits = Physics.RaycastAll(ray.origin, ray.direction, rayDistance, layerMask);
-
-    ShowMovementPattern(_backwardHits);
-
-    // return the hits you got from where the ray was fired (from the creature's (that accesses this script) position)
-    return _backwardHits;
-  }
-
-
-
-
-
-
-
 
 
 
@@ -258,32 +206,6 @@ public class MovementPatterns : MonoBehaviour
     }
   }
 
-
-
-
-
-
-
-
-
-
-
-  // // Changes the color of everything that was hit by the RaycastAll() in CalculateMovementPattern() to a "de-selected" color
-  // public void HideMovementPattern(RaycastHit[] hitsArray)
-  // {
-  //   for (int i = 0; i < hitsArray.Length; i++)
-  //   {
-  //     RaycastHit currentHit = hitsArray[i];
-
-  //     // Ignore Enemy hits in the array you can't get their parent's renderer b/c they dont have a parent object
-  //     if (!currentHit.transform.CompareTag("Enemy"))
-  //     {
-  //       _renderer = currentHit.transform.parent.GetComponent<Renderer>();
-
-  //       SpaceColorSwitcher(_renderer, _spaceDeSelectedColor);
-  //     }
-  //   }
-  // }
 
   // changes color of space by taking in it's Renderer and a Color
   void SpaceColorSwitcher(Renderer spaceRenderer, Color color)
