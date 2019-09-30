@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class MovementPatterns : MonoBehaviour
 {
@@ -36,82 +37,57 @@ public class MovementPatterns : MonoBehaviour
 
   // }
 
-  // fires a ray forward (straight line) and returns what it hits in a RayCastHit array. All spaces that are hit also change color
-  public RaycastHit[] ForwardStraightMovementPattern(Vector3 creaturePosition, float creatureSpaceMoveDistance, float spaceSize)
+  // fires a ray (straight line) and returns what it hits in a RayCastHit array. All spaces that are hit also change color
+  public List<RaycastHit> StraightMovementPattern(Vector3 creaturePosition, Vector3 direction, float creatureSpaceMoveDistance, float spaceSize)
   {
     float rayDistance = creatureSpaceMoveDistance * spaceSize;
 
-    Vector3 rayDirection = transform.TransformDirection(Vector3.forward);
+    Vector3 rayDirection = transform.TransformDirection(direction);
 
     Ray ray = new Ray(creaturePosition, rayDirection);
 
     // RayCastAll() will let you get info from each collider the ray passes through (each one the ray hits)
     _forwardHits = Physics.RaycastAll(ray.origin, ray.direction, rayDistance, layerMask);
 
-    // Draw the ray (only when it is selected) so you can see where it's hitting in Unity
-    // Debug.DrawRay(creaturePosition, rayDirection * rayDistance, Color.red);
+    RaycastHit temp;
 
-    ShowMovementPattern(_forwardHits);
+    List<RaycastHit> sortedHits = new List<RaycastHit>();
 
-    // return the hits you got from where the ray was fired (from the creature's (that accesses this script) position)
-    return _forwardHits;
-  }
+    List<RaycastHit> moveableSpaces = new List<RaycastHit>();
 
-  // fires a ray back (straight line) and returns what it hits in a RayCastHit array. All spaces that are hit also change color
-  public RaycastHit[] BackwardStraightMovementPattern(Vector3 creaturePosition, float creatureSpaceMoveDistance, float spaceSize)
-  {
-    float rayDistance = creatureSpaceMoveDistance * spaceSize;
 
-    Vector3 rayDirection = transform.TransformDirection(Vector3.back);
+    // sort the array from least distance to greatest distance away from the ray
+    for (int i = 0; i < _forwardHits.Length; i++)
+    {
+      for (int j = i; j > 0; j--)
+      {
+        if (_forwardHits[j].distance < _forwardHits[j - 1].distance)
+        {
+          temp = _forwardHits[j];
+          _forwardHits[j] = _forwardHits[j - 1];
+          _forwardHits[j - 1] = temp;
+        }
+      }
+    }
 
-    Ray ray = new Ray(creaturePosition, rayDirection);
+    for (int i = 0; i < _forwardHits.Length; i++)
+    {
+      if (!_forwardHits[i].transform.CompareTag("Enemy"))
+      {
+        moveableSpaces.Add(_forwardHits[i]);
+      }
+      else if (_forwardHits[i].transform.CompareTag("Enemy"))
+      {
+        break;
+      }
+    }
 
-    // RayCastAll() will let you get info from each collider the ray passes through (each one the ray hits)
-    _backwardHits = Physics.RaycastAll(ray.origin, ray.direction, rayDistance, layerMask);
-
-    ShowMovementPattern(_backwardHits);
-
-    // return the hits you got from where the ray was fired (from the creature's (that accesses this script) position)
-    return _backwardHits;
-
-  }
-
-  // fires a ray left (straight line) and returns what it hits in a RayCastHit array. All spaces that are hit also change color
-  public RaycastHit[] LeftStraightMovementPattern(Vector3 creaturePosition, float creatureSpaceMoveDistance, float spaceSize)
-  {
-    float rayDistance = creatureSpaceMoveDistance * spaceSize;
-
-    Vector3 rayDirection = transform.TransformDirection(Vector3.left);
-
-    Ray ray = new Ray(creaturePosition, rayDirection);
-
-    // RayCastAll() will let you get info from each collider the ray passes through (each one the ray hits)
-    _leftHits = Physics.RaycastAll(ray.origin, ray.direction, rayDistance, layerMask);
-
-    ShowMovementPattern(_leftHits);
+    ShowMovementPattern(moveableSpaces);
 
     // return the hits you got from where the ray was fired (from the creature's (that accesses this script) position)
-    return _leftHits;
+    return moveableSpaces;
   }
 
-  // fires a ray right (straight line) and returns what it hits in a RayCastHit array. All spaces that are hit also change color
-  public RaycastHit[] RightStraightMovementPattern(Vector3 creaturePosition, float creatureSpaceMoveDistance, float spaceSize)
-  {
-    float rayDistance = creatureSpaceMoveDistance * spaceSize;
-
-    Vector3 rayDirection = transform.TransformDirection(Vector3.right);
-
-    Ray ray = new Ray(creaturePosition, rayDirection);
-
-    // RayCastAll() will let you get info from each collider the ray passes through (each one the ray hits)
-    _rightHits = Physics.RaycastAll(ray.origin, ray.direction, rayDistance, layerMask);
-
-    ShowMovementPattern(_rightHits);
-
-    // return the hits you got from where the ray was fired (from the creature's (that accesses this script) position)
-    return _rightHits;
-
-  }
 
 
 
@@ -222,9 +198,26 @@ public class MovementPatterns : MonoBehaviour
 
 
 
+  // Changes the color of everything that was hit by the RaycastAll() in CalculateMovementPattern() to a "selected" color
+  public void ShowMovementPattern(List<RaycastHit> hitsArray)
+  {
+    for (int i = 0; i < hitsArray.Count; i++)
+    {
+      // get the info from the current hit
+      RaycastHit currentHit = hitsArray[i];
+
+      // Ignore Enemy hits in the array you can't get their parent's renderer b/c they dont have a parent object
+      if (!currentHit.transform.CompareTag("Enemy"))
+      {
+        _renderer = currentHit.transform.parent.GetComponent<Renderer>();
+
+        SpaceColorSwitcher(_renderer, _spaceSelectedColor);
+      }
+    }
+  }
 
 
-
+  // REMOVE REMOVE REMOVE REMOVE REMOVE REMOVE REMOVE 
   // Changes the color of everything that was hit by the RaycastAll() in CalculateMovementPattern() to a "selected" color
   public void ShowMovementPattern(RaycastHit[] hitsArray)
   {
@@ -243,10 +236,15 @@ public class MovementPatterns : MonoBehaviour
     }
   }
 
+
+
+
+
+
   // Changes the color of everything that was hit by the RaycastAll() in CalculateMovementPattern() to a "de-selected" color
-  public void HideMovementPattern(RaycastHit[] hitsArray)
+  public void HideMovementPattern(List<RaycastHit> hitsArray)
   {
-    for (int i = 0; i < hitsArray.Length; i++)
+    for (int i = 0; i < hitsArray.Count; i++)
     {
       RaycastHit currentHit = hitsArray[i];
 
@@ -259,6 +257,33 @@ public class MovementPatterns : MonoBehaviour
       }
     }
   }
+
+
+
+
+
+
+
+
+
+
+
+  // // Changes the color of everything that was hit by the RaycastAll() in CalculateMovementPattern() to a "de-selected" color
+  // public void HideMovementPattern(RaycastHit[] hitsArray)
+  // {
+  //   for (int i = 0; i < hitsArray.Length; i++)
+  //   {
+  //     RaycastHit currentHit = hitsArray[i];
+
+  //     // Ignore Enemy hits in the array you can't get their parent's renderer b/c they dont have a parent object
+  //     if (!currentHit.transform.CompareTag("Enemy"))
+  //     {
+  //       _renderer = currentHit.transform.parent.GetComponent<Renderer>();
+
+  //       SpaceColorSwitcher(_renderer, _spaceDeSelectedColor);
+  //     }
+  //   }
+  // }
 
   // changes color of space by taking in it's Renderer and a Color
   void SpaceColorSwitcher(Renderer spaceRenderer, Color color)

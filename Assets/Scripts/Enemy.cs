@@ -16,21 +16,39 @@ public class Enemy : MonoBehaviour
 
   // }
 
-  void OnTriggerStay(Collider other)
-  {
-    if (other.CompareTag("Player_1"))
-    {
-      Player player = other.GetComponent<Player>();
+  // void OnTriggerStay(Collider other)
+  // {
+  //   if (other.CompareTag("Player_1"))
+  //   {
+  //     Player player = other.GetComponent<Player>();
 
-      Creature creature = player.getCurrentlySelectedCreature();
+  //     Creature creature = player.getCurrentlySelectedCreature();
 
 
-      if (creature != null && creature.getIsEnemySensedByAttackSeeker() == true && Input.GetKeyDown(KeyCode.X))
-      {
-        Debug.Log("Attack");
-      }
-    }
-  }
+  //     if (creature != null && creature.getIsEnemySensedByAttackSeeker() == true && Input.GetKeyDown(KeyCode.X))
+  //     {
+  //       Debug.Log("Attack");
+  //     }
+  //   }
+  // }
+
+
+  // void OnCollisionStay(Collision other)
+  // {
+
+  //   if (other.transform.CompareTag("Player_1"))
+  //   {
+  //     Player player = other.transform.GetComponent<Player>();
+
+  //     Creature creature = player.getCurrentlySelectedCreature();
+
+
+  //     if (creature != null && creature.getIsEnemySensedByAttackSeeker() == true && Input.GetKeyDown(KeyCode.X))
+  //     {
+  //       Debug.Log("Attack");
+  //     }
+  //   }
+  // }
 
 
 } // End of Enemy class

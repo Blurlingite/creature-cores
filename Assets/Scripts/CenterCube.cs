@@ -6,6 +6,8 @@ public class CenterCube : MonoBehaviour
 {
 
   private bool _isStillColliding = false;
+  [SerializeField]
+  private bool _isEnemyOnSpace = false;
 
 
 
@@ -23,5 +25,22 @@ public class CenterCube : MonoBehaviour
 
 
 
+  void OnTriggerEnter(Collider other)
+  {
+
+    if (other.CompareTag("Enemy"))
+    {
+      _isEnemyOnSpace = true;
+      Debug.Log("eeeee");
+    }
+
+  }
+
+
+  public bool getIsEnemyOnSpace()
+  {
+    return _isEnemyOnSpace;
+
+  }
 
 }

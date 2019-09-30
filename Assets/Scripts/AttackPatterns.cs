@@ -32,7 +32,7 @@ public class AttackPatterns : MonoBehaviour
 
 
 
-  public RaycastHit[] StraightAttackSeekerRay(Vector3 position, Vector3 direction, float maxDistance, float spaceSize, int layerMask, List<Vector3> attackHits)
+  public List<RaycastHit> StraightAttackSeekerRay(Vector3 position, Vector3 direction, float maxDistance, float spaceSize, int layerMask)
   {
     Vector3 pos = position;
 
@@ -44,23 +44,24 @@ public class AttackPatterns : MonoBehaviour
 
     RaycastHit[] hits = Physics.RaycastAll(pos, rayDirection, rayDistance, layerMask);
 
-    ShowAtkPattern(hits);
+    List<RaycastHit> listHits = new List<RaycastHit>();
 
-    for (int i = 0; i < hits.Length; i++)
+    foreach (RaycastHit r in hits)
     {
-      // add to list so we can compare each coordinates with player position
-      attackHits.Add(hits[i].point);
+      listHits.Add(r);
     }
 
-    return hits;
+    ShowAtkPattern(listHits);
+
+
+    return listHits;
 
   }
 
-
   // Changes the color of everything that was hit by the RaycastAll() in CalculateMovementPattern() to a "selected" color
-  void ShowAtkPattern(RaycastHit[] hitsArray)
+  void ShowAtkPattern(List<RaycastHit> hitsArray)
   {
-    for (int i = 0; i < hitsArray.Length; i++)
+    for (int i = 0; i < hitsArray.Count; i++)
     {
       // get the info from the current hit
       RaycastHit currentHit = hitsArray[i];
@@ -78,11 +79,13 @@ public class AttackPatterns : MonoBehaviour
     }
   }
 
-  public void HideAtkPattern(RaycastHit[] hitsArray)
+
+
+  public void HideAtkPattern(List<RaycastHit> hitsArray)
   {
     try
     {
-      for (int i = 0; i < hitsArray.Length; i++)
+      for (int i = 0; i < hitsArray.Count; i++)
       {
         // get the info from the current hit
         RaycastHit currentHit = hitsArray[i];
@@ -102,6 +105,7 @@ public class AttackPatterns : MonoBehaviour
       // throw;
     }
   }
+
 
   // changes color of space by taking in it's Renderer and a Color
   public void SpaceColorSwitcher(Renderer spaceRenderer, Color color)

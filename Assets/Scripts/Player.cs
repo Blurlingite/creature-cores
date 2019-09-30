@@ -7,6 +7,7 @@ public class Player : MonoBehaviour
   // eventually we will get this ID from the Game_Data object so we know which player this is. We will assign Player 1 a color and when we try to select a core the core will check if the player's ID matches the color on the core. (Ex. Player 1 can move blue cores, Player 2 can move green cores, etc.) If it does, that player can move the core but if it doesn't then they can't
   private int _playerID = 1;
   private int _layerMask = 9;
+  [SerializeField]
   private Creature _currentlySelectedCreature;
   private Vector3 _oldPosition;
   private Vector3 _currentPosition;
@@ -63,6 +64,25 @@ public class Player : MonoBehaviour
       _isLocationNew = true;
     }
   }
+
+
+
+
+  void OnTriggerStay(Collider other)
+  {
+    if (other.CompareTag("Enemy"))
+    {
+
+      if (_currentlySelectedCreature != null && _currentlySelectedCreature.getIsEnemySensedByAttackSeeker() == true && Input.GetKeyDown(KeyCode.X))
+      {
+        Debug.Log("Attack");
+      }
+    }
+  }
+
+
+
+
 
   public Creature getCurrentlySelectedCreature()
   {

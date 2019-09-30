@@ -94,6 +94,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8cf51a9f90e7145c1bfdad9a8c5ecfe5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _currentlySelectedCreature: {fileID: 0}
 --- !u!143 &1515770415
 CharacterController:
   m_ObjectHideFlags: 0
@@ -120,7 +121,7 @@ CapsuleCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4729784456847677236}
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Enabled: 1
   m_Radius: 0.5
   m_Height: 2

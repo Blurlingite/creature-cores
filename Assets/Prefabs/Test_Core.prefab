@@ -125,3 +125,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _attackSeekerPrefab: {fileID: 7763037668339281917, guid: 9f8e2014d041a4569af0a16a85b7313e,
     type: 3}
+  _isSelected: 0
+  _isDown: 0
+  _summonAtkSeekers: 0
+  _destroyAtkSeekers: 0
+  _wasEnemyHitByRay: 0
+  _isNewLocation: 0
+  _isEnemySensedByAttackSeeker: 0

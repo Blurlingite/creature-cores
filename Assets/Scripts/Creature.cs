@@ -39,16 +39,15 @@ public class Creature : MonoBehaviour
 
   // everywhere this creature can move
   [SerializeField]
-  private RaycastHit[] _forwardMovementHits;
-
+  private List<RaycastHit> _forwardMovementHits;
 
   private RaycastHit[] _forwardAttackHits;
 
-  private RaycastHit[] _backwardMovementHits;
+  private List<RaycastHit> _backwardMovementHits;
 
-  private RaycastHit[] _leftMovementHits;
+  private List<RaycastHit> _leftMovementHits;
 
-  private RaycastHit[] _rightMovementHits;
+  private List<RaycastHit> _rightMovementHits;
 
   private List<RaycastHit> allEnemyHits = new List<RaycastHit>();
 
@@ -61,7 +60,7 @@ public class Creature : MonoBehaviour
   // number of spaces this creature can move
   private float _moveDistance = 3.0f;
   private float _attackDistance = 2.0f;
-  private string _moveLine = "Diagonal";
+  private string _moveLine = "Straight";
   private string _attackLine = "Straight";
 
   // Start is called before the first frame update
@@ -258,15 +257,14 @@ public class Creature : MonoBehaviour
   }
 
 
-
-  void MovementPattern(RaycastHit[] movementHitPoints)
+  void MovementPattern(List<RaycastHit> movementHitPoints)
   {
     float playerPositionX = _player.transform.position.x;
     float playerPositionZ = _player.transform.position.z;
     // we get to this method when the creature is in the air, so now we need to check if we pressed the Space key and if we did, compare the player's position with the positions in the movement pattern. If you get a match, move the creature there
     if (Input.GetKeyDown(KeyCode.Space))
     {
-      for (int i = 0; i < movementHitPoints.Length; i++)
+      for (int i = 0; i < movementHitPoints.Count; i++)
       {
         RaycastHit currentHit = movementHitPoints[i];
 
@@ -314,22 +312,22 @@ public class Creature : MonoBehaviour
   {
 
     // forward ray results
-    _forwardMovementHits = _movementPatterns.ForwardStraightMovementPattern(creaturePosition, _moveDistance, _spaceSize);
+    _forwardMovementHits = _movementPatterns.StraightMovementPattern(creaturePosition, Vector3.forward, _moveDistance, _spaceSize);
 
     MovementPattern(_forwardMovementHits);
 
     // backward ray results
-    _backwardMovementHits = _movementPatterns.BackwardStraightMovementPattern(creaturePosition, _moveDistance, _spaceSize);
+    _backwardMovementHits = _movementPatterns.StraightMovementPattern(creaturePosition, Vector3.back, _moveDistance, _spaceSize);
 
     MovementPattern(_backwardMovementHits);
 
     // left ray results
-    _leftMovementHits = _movementPatterns.LeftStraightMovementPattern(creaturePosition, _moveDistance, _spaceSize);
+    _leftMovementHits = _movementPatterns.StraightMovementPattern(creaturePosition, Vector3.left, _moveDistance, _spaceSize);
 
     MovementPattern(_leftMovementHits);
 
     // right ray results
-    _rightMovementHits = _movementPatterns.RightStraightMovementPattern(creaturePosition, _moveDistance, _spaceSize);
+    _rightMovementHits = _movementPatterns.StraightMovementPattern(creaturePosition, Vector3.right, _moveDistance, _spaceSize);
 
     MovementPattern(_rightMovementHits);
 
@@ -339,35 +337,34 @@ public class Creature : MonoBehaviour
   void AllDiagonalMovementPatterns(Vector3 creaturePosition)
   {
     // forward right diagonal ray results
-    _forwardMovementHits = _movementPatterns.ForwardRightDiagonalMovementPattern(creaturePosition, _moveDistance, _spaceSize);
+    // _forwardMovementHits = _movementPatterns.ForwardRightDiagonalMovementPattern(creaturePosition, _moveDistance, _spaceSize);
 
-    MovementPattern(_forwardMovementHits);
+    // MovementPattern(_forwardMovementHits);
 
     // forward left diagonal ray results
-    _leftMovementHits = _movementPatterns.ForwardLeftDiagonalMovementPattern(creaturePosition, _moveDistance, _spaceSize);
+    // _leftMovementHits = _movementPatterns.ForwardLeftDiagonalMovementPattern(creaturePosition, _moveDistance, _spaceSize);
 
-    MovementPattern(_leftMovementHits);
+    // MovementPattern(_leftMovementHits);
 
     // backward right diagonal ray results
-    _rightMovementHits = _movementPatterns.BackwardRightDiagonalMovementPattern(creaturePosition, _moveDistance, _spaceSize);
+    // _rightMovementHits = _movementPatterns.BackwardRightDiagonalMovementPattern(creaturePosition, _moveDistance, _spaceSize);
 
-    MovementPattern(_rightMovementHits);
+    // MovementPattern(_rightMovementHits);
 
 
     // backward left diagonal ray results
-    _backwardMovementHits = _movementPatterns.BackwardLeftDiagonalMovementPattern(creaturePosition, _moveDistance, _spaceSize);
+    // _backwardMovementHits = _movementPatterns.BackwardLeftDiagonalMovementPattern(creaturePosition, _moveDistance, _spaceSize);
 
-    MovementPattern(_backwardMovementHits);
+    // MovementPattern(_backwardMovementHits);
 
   }
-
-  void SummonAttackSeekers(RaycastHit[] forwardRayHits, RaycastHit[] backwardRayHits, RaycastHit[] leftRayHits, RaycastHit[] rightRayHits)
+  void SummonAttackSeekers(List<RaycastHit> forwardRayHits, List<RaycastHit> backwardRayHits, List<RaycastHit> leftRayHits, List<RaycastHit> rightRayHits)
   {
 
     if (_stopSummoningAtkSeekers == false)
     {
       // forward
-      for (int i = 0; i < forwardRayHits.Length; i++)
+      for (int i = 0; i < forwardRayHits.Count; i++)
       {
         RaycastHit currentHit = forwardRayHits[i];
 
@@ -389,7 +386,7 @@ public class Creature : MonoBehaviour
       if (backwardRayHits != null)
       {
         // backward
-        for (int i = 0; i < backwardRayHits.Length; i++)
+        for (int i = 0; i < backwardRayHits.Count; i++)
         {
           RaycastHit currentHit = backwardRayHits[i];
 
@@ -412,7 +409,7 @@ public class Creature : MonoBehaviour
       if (leftRayHits != null)
       {
         // left
-        for (int i = 0; i < leftRayHits.Length; i++)
+        for (int i = 0; i < leftRayHits.Count; i++)
         {
           RaycastHit currentHit = leftRayHits[i];
 
@@ -435,7 +432,7 @@ public class Creature : MonoBehaviour
       if (rightRayHits != null)
       {
         // right
-        for (int i = 0; i < rightRayHits.Length; i++)
+        for (int i = 0; i < rightRayHits.Count; i++)
         {
           RaycastHit currentHit = rightRayHits[i];
 
@@ -457,6 +454,8 @@ public class Creature : MonoBehaviour
     }
 
   }
+
+
   // changes all spaces on board to white
   public void ClearBoardColor()
   {
@@ -512,6 +511,13 @@ public class Creature : MonoBehaviour
       }
     }
 
+    List<RaycastHit> listHits = new List<RaycastHit>();
+
+    foreach (RaycastHit r in hits)
+    {
+      listHits.Add(r);
+    }
+
     // If this is 0 that means there were no enemy hits, so no space in range should be colored
     if (numOfEnemyHits == 0)
     {
@@ -519,7 +525,7 @@ public class Creature : MonoBehaviour
 
       foreach (RaycastHit nonEnemy in hits)
       {
-        _attackPatterns.HideAtkPattern(hits);
+        _attackPatterns.HideAtkPattern(listHits);
       }
     }
 
@@ -595,6 +601,7 @@ public class Creature : MonoBehaviour
     currentPosition = transform.position;
     oldPosition = currentPosition;
 
+    // todo: only set this when it is selected
     _player.setCurrentlySelectedCreature(this.gameObject.GetComponent<Creature>());
 
     // If player, move this creature upwards , then cast 4 rays equal to how far this creature can move (ex. 3 spaces forward, backward, left, right)
