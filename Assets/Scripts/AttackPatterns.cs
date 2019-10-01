@@ -5,7 +5,6 @@ using UnityEngine;
 public class AttackPatterns : MonoBehaviour
 {
   private GameData _gameData;
-  private Renderer _renderer;
   private int layerMask = 9;
 
   private Color _spaceSelectedColor = Color.green;
@@ -46,7 +45,7 @@ public class AttackPatterns : MonoBehaviour
 
     List<RaycastHit> sortedHits = new List<RaycastHit>();
 
-    List<RaycastHit> moveableSpaces = new List<RaycastHit>();
+    List<RaycastHit> attackableSpaces = new List<RaycastHit>();
 
     bool isEnemyHitPresent = false;
 
@@ -70,7 +69,7 @@ public class AttackPatterns : MonoBehaviour
       }
     }
 
-    // if at least one enemy hit is in the array, filter out the hits that appear after the enemy hit, else add everything in the array to the list
+    // if at least one enemy hit is in the array, filter out the hits(the spaces) that have greater distance than the enemy hit, else when there isn't an enemy hit add everything in the array to the list
     if (isEnemyHitPresent == true)
     {
 
@@ -82,23 +81,21 @@ public class AttackPatterns : MonoBehaviour
         {
 
           enemyDistance = rayResults[i].distance;
-          moveableSpaces.Add(rayResults[i]);
+          // go through list to filter out all hits with greater distance than enemy's
+          foreach (RaycastHit r in rayResults)
+          {
+            if (r.distance < enemyDistance)
+            {
+              attackableSpaces.Add(r);
+            }
+            else if (r.distance < enemyDistance + spaceSize / 4.0f && !r.transform.CompareTag("Enemy"))
+            {
+              attackableSpaces.Add(r);
+            }
+          }
           break;
         }
 
-      }
-
-
-      for (int i = 0; i < rayResults.Length; i++)
-      {
-
-        float hitDistance = rayResults[i].distance;
-
-        if (hitDistance < (enemyDistance + spaceSize / 4))
-        {
-          moveableSpaces.Add(rayResults[i]);
-
-        }
       }
 
 
@@ -107,15 +104,15 @@ public class AttackPatterns : MonoBehaviour
     {
       foreach (RaycastHit r in rayResults)
       {
-        moveableSpaces.Add(r);
+        attackableSpaces.Add(r);
       }
     }
 
 
-    ShowAtkPattern(moveableSpaces);
+    ShowAtkPattern(attackableSpaces);
 
 
-    return moveableSpaces;
+    return attackableSpaces;
 
   }
 
@@ -127,11 +124,13 @@ public class AttackPatterns : MonoBehaviour
       // get the info from the current hit
       RaycastHit currentHit = hitsArray[i];
 
+      Renderer parentRenderer;
+
       try
       {
-        _renderer = currentHit.transform.parent.GetComponent<Renderer>();
+        parentRenderer = currentHit.transform.parent.GetComponent<Renderer>();
 
-        SpaceColorSwitcher(_renderer, _spaceSelectedColor);
+        SpaceColorSwitcher(parentRenderer, _spaceSelectedColor);
       }
       catch (System.Exception)
       {
@@ -144,6 +143,7 @@ public class AttackPatterns : MonoBehaviour
 
   public void HideAtkPattern(List<RaycastHit> hitsArray)
   {
+    Renderer parentRenderer;
     try
     {
       for (int i = 0; i < hitsArray.Count; i++)
@@ -154,10 +154,10 @@ public class AttackPatterns : MonoBehaviour
         // do not try to get renderer if we hit an enemy otherwise the catch() will activate and skip the rest of the RaycastHits
         if (!currentHit.transform.CompareTag("Enemy"))
         {
-          _renderer = currentHit.transform.parent.GetComponent<Renderer>();
+          parentRenderer = currentHit.transform.parent.GetComponent<Renderer>();
 
 
-          SpaceColorSwitcher(_renderer, _spaceDeSelectedColor);
+          SpaceColorSwitcher(parentRenderer, _spaceDeSelectedColor);
         }
       }
     }

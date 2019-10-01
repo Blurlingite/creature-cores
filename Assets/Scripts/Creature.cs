@@ -61,7 +61,8 @@ public class Creature : MonoBehaviour
   private float _attackDistance = 2.0f;
   private string _moveLine = "Diagonal";
   private string _attackLine = "Straight";
-
+  [SerializeField]
+  private bool _isEnemyCreature = false;
   // Start is called before the first frame update
   void Start()
   {
@@ -76,42 +77,47 @@ public class Creature : MonoBehaviour
   void Update()
   {
 
-    // while the creature is down, keep the spaces on the board to their normal color
-    if (_isSelected == false && _isDown == true)
+    // can't move player's creature unless we use this if statement b/c then both creatures (inclusing the enemy's) would be treated as belonging to the player
+    if (_isEnemyCreature == false)
     {
-      ClearBoardColor();
+
+      CreatureState();
+
+      switch (_moveLine)
+      {
+        case "Straight":
+          CreatureStraightPositioning();
+          break;
+        case "Diagonal":
+          CreatureDiagonalPositioning();
+          break;
+        default:
+          Debug.Log("Other value");
+          break;
+      }
+
+
+      switch (_attackLine)
+      {
+        case "Straight":
+          CreatureStraightAttack();
+          break;
+        default:
+          Debug.Log("Other value");
+          break;
+      }
+
     }
-    CreatureState();
-
-    switch (_moveLine)
-    {
-      case "Straight":
-        CreatureStraightPositioning();
-        break;
-      case "Diagonal":
-        CreatureDiagonalPositioning();
-        break;
-      default:
-        Debug.Log("Other value");
-        break;
-    }
-
-
-    switch (_attackLine)
-    {
-      case "Straight":
-        CreatureStraightAttack();
-        break;
-      default:
-        Debug.Log("Other value");
-        break;
-    }
-
-
   }
 
   private void CreatureState()
   {
+    // while the creature is down, keep the spaces on the board to their normal color
+    if (_isSelected == false && _isDown == true)
+    {
+      // ClearBoardColor();
+    }
+
     if (_spaceSize <= 0.0f)
     {
       Debug.LogError("Cannot get space size, Ray will not be casted");
@@ -600,8 +606,12 @@ public class Creature : MonoBehaviour
     currentPosition = transform.position;
     oldPosition = currentPosition;
 
-    // todo: only set this when it is selected
-    _player.setCurrentlySelectedCreature(this.gameObject.GetComponent<Creature>());
+    if (_isEnemyCreature == false)
+    {
+      // todo: only set this when it is selected
+      _player.setCurrentlySelectedCreature(this.gameObject.GetComponent<Creature>());
+    }
+
 
     // If player, move this creature upwards , then cast 4 rays equal to how far this creature can move (ex. 3 spaces forward, backward, left, right)
     if (other.CompareTag("Player_1") && (Input.GetKeyDown(KeyCode.Space)) && _moveLine.Equals("Straight"))
@@ -629,18 +639,19 @@ public class Creature : MonoBehaviour
       _isNewLocation = false;
     }
 
-    if (other.CompareTag("Center_Cube"))
-    {
-      Renderer _renderer = other.transform.parent.GetComponent<Renderer>();
+    // Commented OUT b/c it was interfering with attack pattern green color on the space the enemy creature was on
+    // if (other.CompareTag("Center_Cube"))
+    // {
+    //   Renderer _renderer = other.transform.parent.GetComponent<Renderer>();
 
-      MaterialPropertyBlock _propBlock = new MaterialPropertyBlock();
+    //   MaterialPropertyBlock _propBlock = new MaterialPropertyBlock();
 
-      _renderer.GetPropertyBlock(_propBlock);
-      // Assign our new value.
-      _propBlock.SetColor("_Color", Color.white);
-      // Apply the edited values to the renderer.
-      _renderer.SetPropertyBlock(_propBlock);
-    }
+    //   _renderer.GetPropertyBlock(_propBlock);
+    //   // Assign our new value.
+    //   _propBlock.SetColor("_Color", Color.white);
+    //   // Apply the edited values to the renderer.
+    //   _renderer.SetPropertyBlock(_propBlock);
+    // }
 
   }
 
