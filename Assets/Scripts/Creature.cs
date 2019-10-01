@@ -59,7 +59,9 @@ public class Creature : MonoBehaviour
   // number of spaces this creature can move
   private float _moveDistance = 3.0f;
   private float _attackDistance = 2.0f;
-  private string _moveLine = "Diagonal";
+  // Diagonal
+  // Straight
+  private string _moveLine = "Straight";
   private string _attackLine = "Straight";
   [SerializeField]
   private bool _isEnemyCreature = false;
@@ -97,15 +99,18 @@ public class Creature : MonoBehaviour
       }
 
 
-      switch (_attackLine)
-      {
-        case "Straight":
-          CreatureStraightAttack();
-          break;
-        default:
-          Debug.Log("Other value");
-          break;
-      }
+      // switch (_attackLine)
+      // {
+      //   case "Straight":
+      //     // CreatureStraightAttack();
+      //     break;
+      //   case "Diagonal":
+      //     CreatureDiagonalAttack();
+      //     break;
+      //   default:
+      //     Debug.Log("Other value");
+      //     break;
+      // }
 
     }
   }
@@ -115,7 +120,7 @@ public class Creature : MonoBehaviour
     // while the creature is down, keep the spaces on the board to their normal color
     if (_isSelected == false && _isDown == true)
     {
-      // ClearBoardColor();
+      ClearBoardColor();
     }
 
     if (_spaceSize <= 0.0f)
@@ -184,6 +189,9 @@ public class Creature : MonoBehaviour
     {
       // Do nothing since this is called when the game just starts and all the RaycastHit arrays are null
     }
+
+    NonPositionBooleanLogic();
+
   }
 
   // Defines the creature's position (for straight line movement) currently and where it can move if possible
@@ -207,8 +215,8 @@ public class Creature : MonoBehaviour
 
 
 
-  // determines where the creature can attack (in a straight line only)
-  public void CreatureStraightAttack()
+  // method containing code for state not involved with checking the position of the creature
+  public void NonPositionBooleanLogic()
   {
     // RAISE & NOT MOVE
     if (_isSelected == true && _isDown == false && _summonAtkSeekers == true)
@@ -486,14 +494,34 @@ public class Creature : MonoBehaviour
   // shoots rays in all directions from creature while it is down to detect enemies in range
   void CreatureAttackRays()
   {
-    AttackRayFromCreature(transform.position, Vector3.forward, _attackDistance, _spaceSize, layerMask);
-    AttackRayFromCreature(transform.position, Vector3.back, _attackDistance, _spaceSize, layerMask);
-    AttackRayFromCreature(transform.position, Vector3.left, _attackDistance, _spaceSize, layerMask);
-    AttackRayFromCreature(transform.position, Vector3.right, _attackDistance, _spaceSize, layerMask);
+
+    if (_attackLine.Equals("Straight"))
+    {
+      StraightAttackRayFromCreature(transform.position, Vector3.forward, _attackDistance, _spaceSize, layerMask);
+      StraightAttackRayFromCreature(transform.position, Vector3.back, _attackDistance, _spaceSize, layerMask);
+      StraightAttackRayFromCreature(transform.position, Vector3.left, _attackDistance, _spaceSize, layerMask);
+      StraightAttackRayFromCreature(transform.position, Vector3.right, _attackDistance, _spaceSize, layerMask);
+    }
+
+    else if (_attackLine.Equals("Diagonal"))
+    {
+      // forward right ray
+      DiagonalAttackRayFromCreature(transform.position, new Vector3(1, 0, 1), _attackDistance, _spaceSize, layerMask);
+
+      // backward left ray
+      DiagonalAttackRayFromCreature(transform.position, new Vector3(-1, 0, -1), _attackDistance, _spaceSize, layerMask);
+
+      // forward left ray
+      DiagonalAttackRayFromCreature(transform.position, new Vector3(-1, 0, 1), _attackDistance, _spaceSize, layerMask);
+
+      // backward right ray
+      DiagonalAttackRayFromCreature(transform.position, new Vector3(1, 0, -1), _attackDistance, _spaceSize, layerMask);
+    }
+
   }
 
   // shoots a ray when the creature is down to detect enemies within range
-  public void AttackRayFromCreature(Vector3 creaturePosition, Vector3 direction, float maxDistance, float spaceSize, int rayLayermask)
+  public void StraightAttackRayFromCreature(Vector3 creaturePosition, Vector3 direction, float maxDistance, float spaceSize, int rayLayermask)
   {
     Vector3 rayDirection = transform.TransformDirection(direction);
 
@@ -537,9 +565,65 @@ public class Creature : MonoBehaviour
     // If an enemy was hit, color the spaces in that direction
     SpaceColorer(hits, _wasEnemyHitByRay);
 
-    Debug.DrawRay(creaturePosition, rayDirection * rayDistance, Color.red);
 
   }
+
+
+  // shoots a ray when the creature is down to detect enemies within range
+  public void DiagonalAttackRayFromCreature(Vector3 creaturePosition, Vector3 direction, float maxDistance, float spaceSize, int rayLayermask)
+  {
+    // Shooting diagonally, we need extra distance equal to half the size of 1 space, which is 2.0f in this case since a space is 4x4
+    float diagonalOffset = spaceSize / 2;
+
+    spaceSize += diagonalOffset;
+
+    Vector3 rayDirection = transform.TransformDirection(direction);
+
+    float rayDistance = maxDistance * spaceSize;
+
+    RaycastHit[] hits = Physics.RaycastAll(creaturePosition, rayDirection, rayDistance, rayLayermask);
+
+    int numOfEnemyHits = 0;
+
+    foreach (RaycastHit r in hits)
+    {
+      if (r.transform.gameObject.CompareTag("Enemy"))
+      {
+        allEnemyHits.Add(r);
+        // needs to be true so the path leading to the enemy is colored in gray with SpaceColorer()
+        _wasEnemyHitByRay = true;
+        // notify attack seeker so we can attack by pressing a certain key
+        _isEnemySensedByAttackSeeker = true;
+        numOfEnemyHits++;
+      }
+    }
+
+    List<RaycastHit> listHits = new List<RaycastHit>();
+
+    foreach (RaycastHit r in hits)
+    {
+      listHits.Add(r);
+    }
+
+    // If this is 0 that means there were no enemy hits, so no space in range should be colored
+    if (numOfEnemyHits == 0)
+    {
+      _wasEnemyHitByRay = false;
+
+      foreach (RaycastHit nonEnemy in hits)
+      {
+        _attackPatterns.HideAtkPattern(listHits);
+      }
+    }
+
+    // If an enemy was hit, color the spaces in that direction
+    SpaceColorer(hits, _wasEnemyHitByRay);
+
+
+  }
+
+
+
 
   public void SpaceColorer(RaycastHit[] hits, bool isEnemyHit)
   {
@@ -675,6 +759,7 @@ public class Creature : MonoBehaviour
     _moveDistance = NumOfSpacesToMove;
   }
 
+
   public string getAttackLine()
   {
     return _attackLine;
@@ -783,6 +868,7 @@ public class Creature : MonoBehaviour
       AllDiagonalMovementPatterns(transform.position);
     }
   }
+
 
 
 

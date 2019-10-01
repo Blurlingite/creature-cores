@@ -48,18 +48,19 @@ public class AttackSeeker : MonoBehaviour
   {
     if (other.CompareTag("Player_1"))
     {
-      if (!Input.GetKey(KeyCode.B))
+      Player player = other.transform.gameObject.GetComponent<Player>();
+
+      Creature creature = player.getCurrentlySelectedCreature();
+
+      Vector3 position = transform.position;
+
+
+      float spaceSize = creature.getSpaceSize();
+      int layerMask = player.getlayerMask();
+      float attackDistance = creature.getAttackDistance();
+
+      if (!Input.GetKey(KeyCode.B) && creature.getAttackLine().Equals("Straight"))
       {
-        Vector3 position = transform.position;
-
-        Player player = other.transform.gameObject.GetComponent<Player>();
-
-        Creature creature = player.getCurrentlySelectedCreature();
-
-        float spaceSize = creature.getSpaceSize();
-        int layerMask = player.getlayerMask();
-        float attackDistance = creature.getAttackDistance();
-
         _forwardAtkHits = _attackPatterns.StraightAttackSeekerRay(position, Vector3.forward, attackDistance, spaceSize, layerMask);
 
         _backwardAtkHits = _attackPatterns.StraightAttackSeekerRay(position, Vector3.back, attackDistance, spaceSize, layerMask);
@@ -67,6 +68,23 @@ public class AttackSeeker : MonoBehaviour
         _leftAtkHits = _attackPatterns.StraightAttackSeekerRay(position, Vector3.left, attackDistance, spaceSize, layerMask);
 
         _rightAtkHits = _attackPatterns.StraightAttackSeekerRay(position, Vector3.right, attackDistance, spaceSize, layerMask);
+      }
+
+      else if (!Input.GetKey(KeyCode.B) && creature.getAttackLine().Equals("Diagonal"))
+      {
+
+        // forward right ray
+        _forwardAtkHits = _attackPatterns.DiagonalAttackSeekerRay(position, new Vector3(1, 0, 1), attackDistance, spaceSize, layerMask);
+
+        // forward left ray
+        _leftAtkHits = _attackPatterns.DiagonalAttackSeekerRay(position, new Vector3(-1, 0, 1), attackDistance, spaceSize, layerMask);
+
+        // backward left ray
+        _backwardAtkHits = _attackPatterns.DiagonalAttackSeekerRay(position, new Vector3(-1, 0, -1), attackDistance, spaceSize, layerMask);
+
+        // backward right ray
+        _rightAtkHits = _attackPatterns.DiagonalAttackSeekerRay(position, new Vector3(1, 0, -1), attackDistance, spaceSize, layerMask);
+
       }
 
     }

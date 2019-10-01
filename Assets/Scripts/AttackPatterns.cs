@@ -11,6 +11,9 @@ public class AttackPatterns : MonoBehaviour
 
   private Color _spaceDeSelectedColor = Color.white;
 
+  // Extra distance needed for diagonal space calculations
+  private float _diagonalOffset;
+
   // Start is called before the first frame update
   void Start()
   {
@@ -41,78 +44,42 @@ public class AttackPatterns : MonoBehaviour
 
     RaycastHit[] rayResults = Physics.RaycastAll(pos, rayDirection, rayDistance, layerMask);
 
-    RaycastHit temp;
 
-    List<RaycastHit> sortedHits = new List<RaycastHit>();
-
-    List<RaycastHit> attackableSpaces = new List<RaycastHit>();
-
-    bool isEnemyHitPresent = false;
+    List<RaycastHit> allAttackableSpaces = CalculateAttackableSpaces(rayResults, spaceSize);
 
 
-    // sort the array from least distance to greatest distance away from the ray
-    for (int i = 0; i < rayResults.Length; i++)
-    {
-      if (rayResults[i].transform.CompareTag("Enemy"))
-      {
-        isEnemyHitPresent = true;
-
-      }
-      for (int j = i; j > 0; j--)
-      {
-        if (rayResults[j].distance < rayResults[j - 1].distance)
-        {
-          temp = rayResults[j];
-          rayResults[j] = rayResults[j - 1];
-          rayResults[j - 1] = temp;
-        }
-      }
-    }
-
-    // if at least one enemy hit is in the array, filter out the hits(the spaces) that have greater distance than the enemy hit, else when there isn't an enemy hit add everything in the array to the list
-    if (isEnemyHitPresent == true)
-    {
-
-      float enemyDistance = 0.0f;
-
-      for (int i = 0; i < rayResults.Length; i++)
-      {
-        if (rayResults[i].transform.CompareTag("Enemy"))
-        {
-
-          enemyDistance = rayResults[i].distance;
-          // go through list to filter out all hits with greater distance than enemy's
-          foreach (RaycastHit r in rayResults)
-          {
-            if (r.distance < enemyDistance)
-            {
-              attackableSpaces.Add(r);
-            }
-            else if (r.distance < enemyDistance + spaceSize / 4.0f && !r.transform.CompareTag("Enemy"))
-            {
-              attackableSpaces.Add(r);
-            }
-          }
-          break;
-        }
-
-      }
+    ShowAtkPattern(allAttackableSpaces);
 
 
-    }
-    else
-    {
-      foreach (RaycastHit r in rayResults)
-      {
-        attackableSpaces.Add(r);
-      }
-    }
+    return allAttackableSpaces;
+
+  }
 
 
-    ShowAtkPattern(attackableSpaces);
+  public List<RaycastHit> DiagonalAttackSeekerRay(Vector3 position, Vector3 direction, float maxDistance, float spaceSize, int layerMask)
+  {
+    // Shooting diagonally, we need extra distance equal to half the size of 1 space, which is 2.0f in this case since a space is 4x4
+    _diagonalOffset = spaceSize / 2;
+
+    spaceSize += _diagonalOffset;
+
+    float rayDistance = maxDistance * spaceSize;
+
+    Vector3 rayDirection = transform.TransformDirection(direction);
+
+    Ray ray = new Ray(position, rayDirection);
+
+    // RayCastAll() will let you get info from each collider the ray passes through (each one the ray hits)
+    RaycastHit[] rayResults = Physics.RaycastAll(ray.origin, ray.direction, rayDistance, layerMask);
 
 
-    return attackableSpaces;
+
+    List<RaycastHit> allAttackableSpaces = CalculateAttackableSpaces(rayResults, spaceSize);
+
+    ShowAtkPattern(allAttackableSpaces);
+
+    // return the hits you got from where the ray was fired (from the creature's (that accesses this script) position)
+    return allAttackableSpaces;
 
   }
 
@@ -180,6 +147,76 @@ public class AttackPatterns : MonoBehaviour
     _propBlock.SetColor("_Color", color);
     // Apply the edited values to the renderer.
     spaceRenderer.SetPropertyBlock(_propBlock);
+  }
+
+
+  List<RaycastHit> CalculateAttackableSpaces(RaycastHit[] attackHits, float theSpaceSize)
+  {
+    List<RaycastHit> attackableSpaces = new List<RaycastHit>();
+
+    RaycastHit temp;
+
+    bool isEnemyHitPresent = false;
+
+
+    // sort the array from least distance to greatest distance away from the ray
+    for (int i = 0; i < attackHits.Length; i++)
+    {
+      if (attackHits[i].transform.CompareTag("Enemy"))
+      {
+        isEnemyHitPresent = true;
+
+      }
+      for (int j = i; j > 0; j--)
+      {
+        if (attackHits[j].distance < attackHits[j - 1].distance)
+        {
+          temp = attackHits[j];
+          attackHits[j] = attackHits[j - 1];
+          attackHits[j - 1] = temp;
+        }
+      }
+    }
+
+    // if at least one enemy hit is in the array, filter out the hits(the spaces) that have greater distance than the enemy hit, else when there isn't an enemy hit add everything in the array to the list
+    if (isEnemyHitPresent == true)
+    {
+
+      float enemyDistance = 0.0f;
+
+      for (int i = 0; i < attackHits.Length; i++)
+      {
+        if (attackHits[i].transform.CompareTag("Enemy"))
+        {
+
+          enemyDistance = attackHits[i].distance;
+          // go through list to filter out all hits with greater distance than enemy's
+          foreach (RaycastHit r in attackHits)
+          {
+            if (r.distance < enemyDistance)
+            {
+              attackableSpaces.Add(r);
+            }
+            else if (r.distance < enemyDistance + theSpaceSize / 4.0f && !r.transform.CompareTag("Enemy"))
+            {
+              attackableSpaces.Add(r);
+            }
+          }
+          break;
+        }
+
+      }
+
+
+    }
+    else
+    {
+      foreach (RaycastHit r in attackHits)
+      {
+        attackableSpaces.Add(r);
+      }
+    }
+    return attackableSpaces;
   }
 
 
