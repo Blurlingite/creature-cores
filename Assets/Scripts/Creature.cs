@@ -25,8 +25,6 @@ public class Creature : MonoBehaviour
   // helps stops summoning attack seekers when they are actually being summoned. Which means this can stay true once changed to true for the whole game w/o causing errors
   private bool _stopSummoningAtkSeekers = false;
   [SerializeField]
-  private bool _wasEnemyHitByRay = false;
-  [SerializeField]
   private bool _isNewLocation = false;
   [SerializeField]
   private bool _isEnemySensedByAttackRay = false;
@@ -60,8 +58,8 @@ public class Creature : MonoBehaviour
   private float _attackDistance = 2.0f;
   // Diagonal
   // Straight
-  private string _moveLine = "Diagonal";
-  private string _attackLine = "Straight";
+  private string _moveLine = "Straight";
+  private string _attackLine = "Diagonal";
   [SerializeField]
   private bool _isEnemyCreature = false;
   // Start is called before the first frame update
@@ -502,9 +500,6 @@ public class Creature : MonoBehaviour
       if (r.transform.gameObject.CompareTag("Enemy"))
       {
         allEnemyHits.Add(r);
-        // needs to be true so the path leading to the enemy is colored in gray with SpaceColorer()
-        _wasEnemyHitByRay = true;
-        // notify attack seeker so we can attack by pressing a certain key
         _isEnemySensedByAttackRay = true;
         numOfEnemyHits++;
       }
@@ -520,7 +515,6 @@ public class Creature : MonoBehaviour
     // If this is 0 that means there were no enemy hits, so no space in range should be colored
     if (numOfEnemyHits == 0)
     {
-      _wasEnemyHitByRay = false;
 
       foreach (RaycastHit nonEnemy in hits)
       {
@@ -528,8 +522,6 @@ public class Creature : MonoBehaviour
       }
     }
 
-    // If an enemy was hit, color the spaces in that direction
-    SpaceColorer(hits, _wasEnemyHitByRay);
 
 
   }
@@ -557,7 +549,6 @@ public class Creature : MonoBehaviour
       {
         allEnemyHits.Add(r);
         // needs to be true so the path leading to the enemy is colored in gray with SpaceColorer()
-        _wasEnemyHitByRay = true;
         // notify attack seeker so we can attack by pressing a certain key
         _isEnemySensedByAttackRay = true;
         numOfEnemyHits++;
@@ -574,80 +565,18 @@ public class Creature : MonoBehaviour
     // If this is 0 that means there were no enemy hits, so no space in range should be colored
     if (numOfEnemyHits == 0)
     {
-      _wasEnemyHitByRay = false;
-
       foreach (RaycastHit nonEnemy in hits)
       {
         _attackPatterns.HideAtkPattern(listHits);
       }
     }
 
-    // If an enemy was hit, color the spaces in that direction
-    SpaceColorer(hits, _wasEnemyHitByRay);
-
-
   }
 
 
 
 
-  public void SpaceColorer(RaycastHit[] hits, bool isEnemyHit)
-  {
-    float enemyXFloat = 0.0f;
-    float enemyZFloat = 0.0f;
 
-    float spaceXFloat = 0.0f;
-    float spaceZFloat = 0.0f;
-
-    if (isEnemyHit == true)
-    {
-      // Go through each enemy object that was hit, round their positions and then round & compare the positions of each of the space's hit with those positions and if it's a match, color that square gray
-      foreach (RaycastHit enemy in allEnemyHits)
-      {
-        enemyXFloat = RoundPositionFloat(enemy.point.x, _spaceSize);
-        enemyZFloat = RoundPositionFloat(enemy.point.z, _spaceSize);
-
-
-        foreach (RaycastHit space in hits)
-        {
-          spaceXFloat = RoundPositionFloat(space.point.x, _spaceSize);
-          spaceZFloat = RoundPositionFloat(space.point.z, _spaceSize);
-
-          if (enemyXFloat == spaceXFloat && enemyZFloat == spaceZFloat)
-          {
-            try
-            {
-              Transform parentSpace = space.transform.parent;
-
-            }
-            catch (NullReferenceException e)
-            {
-              // just doing this so the error goes away
-              e.ToString();
-            }
-          }
-          else
-          {
-            try
-            {
-              Transform parentSpace = space.transform.parent;
-
-            }
-            catch (NullReferenceException e)
-            {
-              // just doing this so the error goes away
-              e.ToString();
-            }
-          }
-        }
-      }
-    }
-    else
-    {
-      // do nothing so we don't color the space
-    }
-
-  }
 
 
   void OnTriggerStay(Collider other)
@@ -688,20 +617,6 @@ public class Creature : MonoBehaviour
       transform.position = new Vector3(transform.position.x, _creatureGroundY, transform.position.z);
       _isNewLocation = false;
     }
-
-    // Commented OUT b/c it was interfering with attack pattern green color on the space the enemy creature was on
-    // if (other.CompareTag("Center_Cube"))
-    // {
-    //   Renderer _renderer = other.transform.parent.GetComponent<Renderer>();
-
-    //   MaterialPropertyBlock _propBlock = new MaterialPropertyBlock();
-
-    //   _renderer.GetPropertyBlock(_propBlock);
-    //   // Assign our new value.
-    //   _propBlock.SetColor("_Color", Color.white);
-    //   // Apply the edited values to the renderer.
-    //   _renderer.SetPropertyBlock(_propBlock);
-    // }
 
   }
 
