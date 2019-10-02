@@ -29,7 +29,7 @@ public class Creature : MonoBehaviour
   [SerializeField]
   private bool _isNewLocation = false;
   [SerializeField]
-  private bool _isEnemySensedByAttackSeeker = false;
+  private bool _isEnemySensedByAttackRay = false;
   private float _creatureRiseHeight = 3.0f;
   // The Y position the creature needs to be to be on the ground
   private float _creatureGroundY = 1.04f;
@@ -40,7 +40,6 @@ public class Creature : MonoBehaviour
   // everywhere this creature can move
   [SerializeField]
   private List<RaycastHit> _forwardMovementHits;
-  private RaycastHit[] _forwardAttackHits;
 
   private List<RaycastHit> _backwardMovementHits;
 
@@ -61,7 +60,7 @@ public class Creature : MonoBehaviour
   private float _attackDistance = 2.0f;
   // Diagonal
   // Straight
-  private string _moveLine = "Straight";
+  private string _moveLine = "Diagonal";
   private string _attackLine = "Straight";
   [SerializeField]
   private bool _isEnemyCreature = false;
@@ -99,29 +98,21 @@ public class Creature : MonoBehaviour
       }
 
 
-      // switch (_attackLine)
-      // {
-      //   case "Straight":
-      //     // CreatureStraightAttack();
-      //     break;
-      //   case "Diagonal":
-      //     CreatureDiagonalAttack();
-      //     break;
-      //   default:
-      //     Debug.Log("Other value");
-      //     break;
-      // }
+
 
     }
   }
+
+
 
   private void CreatureState()
   {
     // while the creature is down, keep the spaces on the board to their normal color
     if (_isSelected == false && _isDown == true)
     {
-      ClearBoardColor();
+      _board.ClearBoardColor();
     }
+
 
     if (_spaceSize <= 0.0f)
     {
@@ -167,7 +158,7 @@ public class Creature : MonoBehaviour
       _isDown = true;
       _summonAtkSeekers = false;
 
-      ClearBoardColor();
+      _board.ClearBoardColor();
     }
 
 
@@ -177,6 +168,8 @@ public class Creature : MonoBehaviour
     if (_whoseTurnIsIt.Equals("Player_1") && _isSelected == true && Input.GetKeyDown(KeyCode.B))
     {
       transform.position = new Vector3(transform.position.x, _creatureGroundY, transform.position.z);
+
+      _board.DeactivateSpaces();
     }
 
 
@@ -238,17 +231,12 @@ public class Creature : MonoBehaviour
       {
         // empty list to clear old results from last raycast
         allEnemyHits.Clear();
-        ClearBoardColor();
-        if (_forwardAttackHits != null)
-        {
-          Debug.Log(_forwardAttackHits.Length);
 
-        }
         CreatureAttackRays();
 
         if (allEnemyHits.Count == 0)
         {
-          _isEnemySensedByAttackSeeker = false;
+          _isEnemySensedByAttackRay = false;
         }
       }
     }
@@ -469,28 +457,6 @@ public class Creature : MonoBehaviour
   }
 
 
-  // changes all spaces on board to white
-  public void ClearBoardColor()
-  {
-    Renderer[] allSpaceRenderers = _board.GetComponentsInChildren<Renderer>();
-
-    foreach (Renderer r in allSpaceRenderers)
-    {
-      // We don't want to color the center cubes so exclude any gameobjects with that tag
-      if (!r.gameObject.CompareTag("Center_Cube"))
-      {
-        MaterialPropertyBlock _propBlock = new MaterialPropertyBlock();
-
-        r.GetPropertyBlock(_propBlock);
-        // Assign our new value.
-        _propBlock.SetColor("_Color", Color.white);
-        // Apply the edited values to the renderer.
-        r.SetPropertyBlock(_propBlock);
-      }
-
-    }
-  }
-
   // shoots rays in all directions from creature while it is down to detect enemies in range
   void CreatureAttackRays()
   {
@@ -539,7 +505,7 @@ public class Creature : MonoBehaviour
         // needs to be true so the path leading to the enemy is colored in gray with SpaceColorer()
         _wasEnemyHitByRay = true;
         // notify attack seeker so we can attack by pressing a certain key
-        _isEnemySensedByAttackSeeker = true;
+        _isEnemySensedByAttackRay = true;
         numOfEnemyHits++;
       }
     }
@@ -593,7 +559,7 @@ public class Creature : MonoBehaviour
         // needs to be true so the path leading to the enemy is colored in gray with SpaceColorer()
         _wasEnemyHitByRay = true;
         // notify attack seeker so we can attack by pressing a certain key
-        _isEnemySensedByAttackSeeker = true;
+        _isEnemySensedByAttackRay = true;
         numOfEnemyHits++;
       }
     }
@@ -651,8 +617,8 @@ public class Creature : MonoBehaviour
           {
             try
             {
-              Renderer parentSpace = space.transform.parent.GetComponent<Renderer>();
-              _attackPatterns.SpaceColorSwitcher(parentSpace, Color.gray);
+              Transform parentSpace = space.transform.parent;
+
             }
             catch (NullReferenceException e)
             {
@@ -664,8 +630,8 @@ public class Creature : MonoBehaviour
           {
             try
             {
-              Renderer parentSpace = space.transform.parent.GetComponent<Renderer>();
-              _attackPatterns.SpaceColorSwitcher(parentSpace, Color.white);
+              Transform parentSpace = space.transform.parent;
+
             }
             catch (NullReferenceException e)
             {
@@ -785,14 +751,14 @@ public class Creature : MonoBehaviour
     return _isDown;
   }
 
-  public bool getIsEnemySensedByAttackSeeker()
+  public bool getIsEnemySensedByAttackRay()
   {
-    return _isEnemySensedByAttackSeeker;
+    return _isEnemySensedByAttackRay;
   }
 
-  public void setIsEnemySensedByAttackSeeker(bool isSensed)
+  public void setIsEnemySensedByAttackRay(bool isSensed)
   {
-    _isEnemySensedByAttackSeeker = isSensed;
+    _isEnemySensedByAttackRay = isSensed;
   }
 
   void FindAndLoadResources()

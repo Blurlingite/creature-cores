@@ -131,4 +131,5 @@ MonoBehaviour:
   _destroyAtkSeekers: 0
   _wasEnemyHitByRay: 0
   _isNewLocation: 0
-  _isEnemySensedByAttackSeeker: 0
+  _isEnemySensedByAttackRay: 0
+  _isEnemyCreature: 0

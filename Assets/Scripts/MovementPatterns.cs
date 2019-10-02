@@ -6,9 +6,11 @@ using System;
 public class MovementPatterns : MonoBehaviour
 {
   private GameData _gameData;
-  private Renderer _renderer;
   private Color _spaceSelectedColor = Color.blue;
   private Color _spaceDeSelectedColor = Color.white;
+
+  // the child object index of the child object Inner_Cube
+  private int _innerCubeIndex = 1;
 
   // used to ignore colliders on a certain layer (layer 9 in this case b/c we set it to 9) when casting rays so I don't get unintended hits in the hit arrays and then errors. 
   // The Player is on layer 9 b/c it's collider was getting in the way
@@ -157,9 +159,19 @@ public class MovementPatterns : MonoBehaviour
       // Ignore Enemy hits in the array you can't get their parent's renderer b/c they dont have a parent object
       if (!currentHit.transform.CompareTag("Enemy"))
       {
-        _renderer = currentHit.transform.parent.GetComponent<Renderer>();
+        // _renderer = currentHit.transform.parent.GetComponent<Renderer>();
 
-        SpaceColorSwitcher(_renderer, _spaceSelectedColor);
+        Transform parentSpace = currentHit.transform.parent;
+
+        // if (parentSpace.GetComponent<Space>() != null)
+        // {
+        //   Space space = parentSpace.GetComponent<Space>();
+
+        //   space.setIsActiveMove(true);
+
+        // }
+
+        SpaceColorSwitcher(parentSpace, _spaceSelectedColor);
       }
     }
   }
@@ -167,22 +179,29 @@ public class MovementPatterns : MonoBehaviour
 
   // REMOVE REMOVE REMOVE REMOVE REMOVE REMOVE REMOVE 
   // Changes the color of everything that was hit by the RaycastAll() in CalculateMovementPattern() to a "selected" color
-  public void ShowMovementPattern(RaycastHit[] hitsArray)
-  {
-    for (int i = 0; i < hitsArray.Length; i++)
-    {
-      // get the info from the current hit
-      RaycastHit currentHit = hitsArray[i];
+  // public void ShowMovementPattern(RaycastHit[] hitsArray)
+  // {
+  //   for (int i = 0; i < hitsArray.Length; i++)
+  //   {
+  //     // get the info from the current hit
+  //     RaycastHit currentHit = hitsArray[i];
 
-      // Ignore Enemy hits in the array you can't get their parent's renderer b/c they dont have a parent object
-      if (!currentHit.transform.CompareTag("Enemy"))
-      {
-        _renderer = currentHit.transform.parent.GetComponent<Renderer>();
+  //     // Ignore Enemy hits in the array you can't get their parent's renderer b/c they dont have a parent object
+  //     if (!currentHit.transform.CompareTag("Enemy"))
+  //     {
 
-        SpaceColorSwitcher(_renderer, _spaceSelectedColor);
-      }
-    }
-  }
+  //       Transform parentSpace = currentHit.transform.parent;
+
+  //       Space space = parentSpace.GetComponent<Space>();
+
+  //       space.setIsActiveMove(true);
+
+  //       // _renderer = currentHit.transform.parent.GetComponent<Renderer>();
+
+  //       SpaceColorSwitcher(parentSpace, _spaceSelectedColor);
+  //     }
+  //   }
+  // }
 
 
 
@@ -199,27 +218,36 @@ public class MovementPatterns : MonoBehaviour
       // Ignore Enemy hits in the array you can't get their parent's renderer b/c they dont have a parent object
       if (!currentHit.transform.CompareTag("Enemy"))
       {
-        _renderer = currentHit.transform.parent.GetComponent<Renderer>();
+        // _renderer = currentHit.transform.parent.GetComponent<Renderer>();
 
-        SpaceColorSwitcher(_renderer, _spaceDeSelectedColor);
+        Transform parentSpace = currentHit.transform.parent;
+
+
+        SpaceColorSwitcher(parentSpace, _spaceDeSelectedColor);
       }
     }
   }
 
-
   // changes color of space by taking in it's Renderer and a Color
-  void SpaceColorSwitcher(Renderer spaceRenderer, Color color)
+  void SpaceColorSwitcher(Transform parentSpace, Color color)
   {
     MaterialPropertyBlock _propBlock = new MaterialPropertyBlock();
 
+
+    Renderer outerSpace = parentSpace.GetComponent<Renderer>();
+
+
     // Get the current value of the material properties in the renderer (which should be the Material we gave a custom shader to that we assigned (to the parent in this case) in Unity)
     // Note: When we made the custom shader, we had to open it here and edit the "_Color" key to have "[PerRendererData]" in front of it (see GreenShader_shade in the Materials folder) Then we created a Material and assigned it this shader in the "Shader" field (I had to search for it by name). Then we took that Material and assigned it to the cube we want to change color (The parent of the object that this script is attached to, Ex. Normal_Cube)
-    spaceRenderer.GetPropertyBlock(_propBlock);
+    outerSpace.GetPropertyBlock(_propBlock);
     // Assign our new value.
     _propBlock.SetColor("_Color", color);
     // Apply the edited values to the renderer.
-    spaceRenderer.SetPropertyBlock(_propBlock);
+    outerSpace.SetPropertyBlock(_propBlock);
+
   }
+
+
 
 
 

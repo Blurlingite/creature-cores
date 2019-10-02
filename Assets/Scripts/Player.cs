@@ -73,7 +73,7 @@ public class Player : MonoBehaviour
     if (other.CompareTag("Enemy"))
     {
 
-      if (_currentlySelectedCreature != null && _currentlySelectedCreature.getIsEnemySensedByAttackSeeker() == true && Input.GetKeyDown(KeyCode.X))
+      if (_currentlySelectedCreature != null && _currentlySelectedCreature.getIsEnemySensedByAttackRay() == true && Input.GetKeyDown(KeyCode.X))
       {
         Debug.Log("Attack");
       }

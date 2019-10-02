@@ -9,6 +9,8 @@ TagManager:
   - Player_1
   - Center_Cube
   - Enemy
+  - Inner_Cube
+  - Space
   layers:
   - Default
   - TransparentFX
